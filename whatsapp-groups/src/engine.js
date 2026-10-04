@@ -11,7 +11,8 @@
   const { ICONS, AVATARS, GROUP_ART, wallpaperDataUri, pdfPagePreview } = window.WA_ART;
   const VW = S.video.width;
   const VH = S.video.height;
-  const L = S.layout;
+  const PH = S.phones;
+  const FX = S.effects || {};
 
   /* ---------------- עזרים ---------------- */
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -32,8 +33,10 @@
     return e;
   };
 
-  const ENTER = 0.42; // משך כניסת הודעה
-  const TYPING_DEFAULT = 1.3;
+  const ENTER = FX.messageEnter || 0.32; // משך כניסת הודעה
+  const TYPING_DEFAULT = FX.typingDefault == null ? 0.5 : FX.typingDefault;
+  // קפיץ מרוסן: מגיע ל־1 עם "קפיצה" קטנה מעבר (overshoot) — תנועה חיה ודינמית
+  const spring = (k) => (k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-9 * k) * Math.cos(8 * k));
 
   // הזנב של בועה נכנסת. בעברית הבועה בצד ימין והזנב בפינה הימנית העליונה
   const TAIL = '<svg viewBox="0 0 8 12"><path fill="currentColor" d="M0 0h6.2c1.5 0 2.2 1.5 1.2 2.6L0 11.6z"/></svg>';
@@ -58,8 +61,8 @@
       M.timeStr = m.time || clockAt(m.at);
       if (!M.isSystem) {
         const dur = m.typing == null ? TYPING_DEFAULT : m.typing;
-        const start = Math.max(m.at - dur, prev ? prev.at + 0.45 : -1);
-        M.typingFrom = dur > 0 && start < m.at - 0.25 ? start : null;
+        const start = Math.max(m.at - dur, prev ? prev.at + 0.18 : -1);
+        M.typingFrom = dur > 0 && start < m.at - 0.2 ? start : null;
       }
       if (m.id) G.byId[m.id] = M;
       G.msgs.push(M);
@@ -68,6 +71,7 @@
     const join = S.timeline.joins.find((j) => j.group === g.id);
     G.joinAt = join ? join.at : Infinity;
     G.scrolls = (S.timeline.scrolls || []).filter((s) => s.group === g.id);
+    G.order = S.timeline.joins.findIndex((j) => j.group === g.id);
     return G;
   });
   const groupById = Object.fromEntries(groups.map((g) => [g.id, g]));
@@ -85,6 +89,21 @@
   /* ---------------- בניית DOM ---------------- */
   const stage = document.getElementById('stage');
   const wallpaper = `url("${wallpaperDataUri()}")`;
+  // רקע חי: כתמי אור שזזים לאט + דודלים עדינים, "עולם" שמכיל את הטלפונים, ושכבת אפקטים
+  const bg = el('div', 'bg');
+  const blobs = [0, 1, 2].map((i) => {
+    const b = el('div', 'blob b' + i);
+    bg.appendChild(b);
+    return b;
+  });
+  const doodles = el('div', 'bg-doodles');
+  doodles.style.backgroundImage = `url("${wallpaperDataUri({ bg: 'none', stroke: 'rgba(255,255,255,0.055)' })}")`;
+  bg.appendChild(doodles);
+  stage.appendChild(bg);
+  const world = el('div', 'world');
+  stage.appendChild(world);
+  const fxLayer = el('div', 'fx');
+  stage.appendChild(fxLayer);
 
   function buildMessage(G, M) {
     const wrap = el('div', 'msg-wrap');
@@ -186,11 +205,37 @@
     return wrap;
   }
 
-  function buildPanel(G) {
-    const panel = el('div', 'panel');
-    panel.style.borderRadius = L.radius + 'px';
+  function buildPhone(G) {
+    const phone = el('div', 'phone');
+    phone.style.width = PH.width + 'px';
+    phone.style.height = PH.height + 'px';
+    const device = el('div', 'device');
+    device.style.borderRadius = PH.radius + 'px';
+    const clip = el('div', 'screen-clip');
+    clip.style.inset = PH.bezel + 'px';
+    clip.style.borderRadius = PH.radius - PH.bezel + 'px';
     const screen = el('div', 'screen');
-    panel.appendChild(screen);
+    const s = (PH.width - 2 * PH.bezel) / PH.dpWidth;
+    screen.style.width = PH.dpWidth + 'px';
+    screen.style.height = (PH.height - 2 * PH.bezel) / s + 'px';
+    screen.style.transform = `scale(${s})`;
+    clip.appendChild(screen);
+    device.appendChild(clip);
+    const punch = el('div', 'punch');
+    punch.style.top = PH.bezel + 9 + 'px';
+    device.appendChild(punch);
+    phone.appendChild(device);
+    const glow = el('div', 'glow');
+    glow.style.borderRadius = PH.radius + 6 + 'px';
+    phone.appendChild(glow);
+
+    // שורת הסטטוס של אנדרואיד (בעברית: השעון מימין, הסמלים משמאל)
+    const status = el(
+      'div',
+      'status',
+      `<span class="clock ltr-iso"></span><span class="sicons">${ICONS.signal}${ICONS.wifi}${ICONS.battery}</span>`
+    );
+    screen.appendChild(status);
 
     // כותרת
     // רשימת המשתתפים בכותרת: אנשי קשר שמורים, אחריהם מספרי טלפון, ובסוף "את/ה"
@@ -242,22 +287,17 @@
       )
     );
 
-    const dim = el('div', 'dim');
-    const ring = el('div', 'ring');
-    ring.style.borderRadius = L.radius + 'px';
-    panel.appendChild(dim);
-    panel.appendChild(ring);
-    panel.style.display = 'none';
-    stage.appendChild(panel);
+    phone.style.display = 'none';
+    world.appendChild(phone);
 
     Object.assign(G, {
-      panel,
+      phone,
+      glow,
+      clock: status.querySelector('.clock'),
       screen,
       chat,
       scroller,
       fab,
-      dim,
-      ring,
       titleEl: header.querySelector('.title'),
       titleFit: {},
       membersFit: {},
@@ -267,7 +307,39 @@
     });
   }
 
-  groups.forEach(buildPanel);
+  groups.forEach(buildPhone);
+
+  /* ---------------- אפקט: אימוג'ים שעפים מתגובה חדשה ---------------- */
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const bursts = [];
+  if (FX.reactionBursts) {
+    for (const G of groups) {
+      for (const M of G.msgs) {
+        if (!M.reactions) continue;
+        M.reactions.forEach((r, j) => {
+          const prevE = j ? M.reactions[j - 1].emojis : [];
+          const fresh = r.emojis.filter((e) => !prevE.includes(e));
+          const emoji = (fresh.length ? fresh : r.emojis).slice(-1)[0];
+          for (let n = 0; n < 3; n++) {
+            const p = el('span', 'particle', emoji);
+            p.style.display = 'none';
+            fxLayer.appendChild(p);
+            bursts.push({
+              G,
+              M,
+              at: r.at + n * 0.08,
+              el: p,
+              ang: (-160 + rnd() * 120) * (Math.PI / 180),
+              dist: 70 + rnd() * 70,
+              size: 26 + rnd() * 10,
+              spin: -25 + rnd() * 50,
+            });
+          }
+        });
+      }
+    }
+  }
 
   /* ---------------- קיצור טקסט בכותרת ----------------
    * קיצור "לוגי" עם … בסוף המחרוזת (כמו באנדרואיד), במקום קיצור ויזואלי של
@@ -310,74 +382,31 @@
     }
   }
 
-  /* ---------------- פריסה ---------------- */
-  function focusAmounts(t) {
-    const F = S.timeline.focus;
-    const D = L.focusDuration;
-    const amounts = Object.fromEntries(groups.map((g) => [g.id, 0]));
-    const up = (k) => {
-      if (k >= F.length) return 0;
-      if (k === 0) return t >= F[0].at ? 1 : 0;
-      return easeInOut(clamp((t - F[k].at) / D));
-    };
-    for (let k = 0; k < F.length; k++) {
-      const w = up(k) - up(k + 1);
-      if (F[k].group && w > 0) amounts[F[k].group] += w;
-    }
-    return amounts;
-  }
-
-  function scaleFor(w) {
-    const C = L.scaleCurve;
-    if (w <= C[0][0]) return C[0][1] * (w / C[0][0]) ** 0.35;
-    for (let i = 1; i < C.length; i++) {
-      if (w <= C[i][0]) return lerp(C[i - 1][1], C[i][1], (w - C[i - 1][0]) / (C[i][0] - C[i - 1][0]));
-    }
-    return C[C.length - 1][1];
-  }
-
-  function boostFor(n) {
-    const B = L.focusBoost;
-    const lo = Math.max(1, Math.floor(n));
-    const hi = Math.min(4, lo + 1);
-    return lerp(B[lo] || 0, B[hi] || 0, clamp(n - lo));
-  }
-
+  /* ---------------- פריסה ----------------
+   * כל הטלפונים באותו גודל, בשורה אחת ממורכזת. קבוצה חדשה נכנסת משמאל
+   * (סדר עברי: הראשונה מימין), והשורה כולה מתמרכזת מחדש בתנועת קפיץ. */
   function computeLayout(t) {
     const active = joinOrder.filter((g) => t >= g.joinAt);
-    const fa = focusAmounts(t);
-    const pres = active.map((g, i) => (i === 0 ? 1 : easeInOut(clamp((t - g.joinAt) / L.joinDuration))));
-    const nEff = pres.reduce((a, b) => a + b, 0);
-    const boost = boostFor(nEff);
-    const weights = active.map((g) => 1 + boost * fa[g.id]);
-    const gaps = pres.map((p, i) => (i === 0 ? 0 : L.gap * p));
-    const avail = VW - 2 * L.margin - gaps.reduce((a, b) => a + b, 0);
-    const eff = weights.map((w, i) => w * pres[i]);
-    const effSum = eff.reduce((a, b) => a + b, 0);
-    const availFull = VW - 2 * L.margin - L.gap * (active.length - 1);
-    const wSum = weights.reduce((a, b) => a + b, 0);
-    const multi = clamp(nEff - 1);
-    const anyFocus = active.reduce((a, g) => a + fa[g.id], 0);
-    const out = [];
-    let right = VW - L.margin;
-    active.forEach((g, i) => {
-      right -= gaps[i];
-      const slot = (avail * eff[i]) / effSum;
-      const w = pres[i] < 1 ? (availFull * weights[i]) / wSum : slot;
-      out.push({
-        g,
-        x: right - w,
-        w,
-        y: L.margin,
-        h: VH - 2 * L.margin,
-        presence: pres[i],
-        focus: fa[g.id],
-        dim: L.dimOthers * multi * clamp(anyFocus) * (1 - fa[g.id]),
-        ring: multi * fa[g.id],
-      });
-      right -= slot;
-    });
-    return out;
+    const enter = active.map((g) => clamp((t - g.joinAt) / PH.joinDuration));
+    const pres = active.map((g, i) => (i === 0 ? 1 : spring(enter[i])));
+    const total = pres.reduce((a, p, i) => a + PH.width * p + (i ? PH.gap * p : 0), 0);
+    const y0 = (VH - PH.height) / 2;
+    let right = (VW + total) / 2;
+    return active.map((g, i) => {
+      if (i) right -= PH.gap * pres[i];
+      const x = right - PH.width;
+      right -= PH.width * pres[i];
+      return { g, x, y: y0, enter: enter[i], presence: pres[i] };
+    }).concat([{ nEff: pres.reduce((a, b) => a + b, 0) }]);
+  }
+
+  function zoomFor(n) {
+    const Z = (S.camera && S.camera.zoomByCount) || {};
+    const lo = Math.max(1, Math.floor(n));
+    const hi = lo + 1;
+    const zl = Z[lo] == null ? 1 : Z[lo];
+    const zh = Z[hi] == null ? zl : Z[hi];
+    return lerp(zl, zh, clamp(n - lo));
   }
 
   /* ---------------- עדכון צ'אט ---------------- */
@@ -494,46 +523,68 @@
 
   /* ---------------- ציור פריים ---------------- */
   function seek(t) {
+    // רקע
+    blobs.forEach((b, i) => {
+      const a = t * (0.35 + i * 0.12) + i * 2.1;
+      b.style.transform = `translate(${Math.cos(a) * 140}px, ${Math.sin(a * 1.3) * 90}px)`;
+    });
+    doodles.style.backgroundPosition = `${-t * 14}px ${-t * 22}px`;
+
     const lay = computeLayout(t);
+    const { nEff } = lay.pop();
+    const zoom = zoomFor(nEff);
+    world.style.transform = `scale(${zoom})`;
+
+    const clockStr = clockAt(t);
     const shown = new Set();
     for (const it of lay) {
       const G = it.g;
       shown.add(G);
-      const P = G.panel;
+      const P = G.phone;
       if (P.style.display === 'none') P.style.display = '';
-      P.style.left = it.x + 'px';
-      P.style.top = it.y + 'px';
-      P.style.width = it.w + 'px';
-      P.style.height = it.h + 'px';
+      // כניסה: הטלפון עולה מלמטה, מסתובב קלות ומתייצב בקפיץ
+      const e = spring(it.enter);
+      const ey = 1 - Math.pow(1 - it.enter, 4);
+      const fl = (PH.float || 0) * Math.sin(t * 1.7 + G.order * 1.9) * clamp(it.enter * 2);
+      const ty = (1 - ey) * 480 + fl;
+      const sc = 0.84 + 0.16 * e;
+      const rot = (1 - ey) * -6;
+      P.style.transform = `translate(${it.x}px, ${it.y + ty}px) rotate(${rot}deg) scale(${sc})`;
+      P.style.opacity = clamp(it.enter * 4);
+      P.style.zIndex = 10 + G.order;
 
-      // כניסה: הקבוצה הראשונה "נפתחת" במרכז, הבאות נדחפות פנימה מהשמאל
-      let op = 1;
-      let tr = 'none';
-      if (G === joinOrder[0]) {
-        const k = clamp((t - G.joinAt) / 0.9);
-        op = easeOut(clamp(k * 1.4));
-        tr = k < 1 ? `scale(${0.93 + 0.07 * easeOutBack(k, 1.1)})` : 'none';
-      } else if (it.presence < 1) {
-        op = clamp(it.presence * 2.2);
-      }
-      P.style.opacity = op;
-      P.style.transform = tr;
-      P.style.zIndex = Math.round(10 + it.focus * 10);
+      const gk = clamp((t - G.joinAt - 0.15) / 1.1);
+      G.glow.style.opacity = FX.joinGlow && gk > 0 && gk < 1 ? Math.sin(gk * Math.PI) * 0.9 : 0;
 
-      const s = scaleFor(it.w);
-      G.screen.style.width = it.w / s + 'px';
-      G.screen.style.height = it.h / s + 'px';
-      G.screen.style.transform = `scale(${s})`;
-
+      if (G.clock.textContent !== clockStr) G.clock.textContent = clockStr;
       fitText(G.titleEl, G.title, '500 17px', G.titleFit);
       fitText(G.subMembers, G.membersText, '400 13px', G.membersFit, true);
-
-      G.dim.style.opacity = it.dim;
-      G.ring.style.opacity = it.ring * 0.9;
-
       updateChat(G, t);
     }
-    for (const G of groups) if (!shown.has(G)) G.panel.style.display = 'none';
+    for (const G of groups) if (!shown.has(G)) G.phone.style.display = 'none';
+
+    // אימוג'ים שעפים מהתגובות
+    if (bursts.length) {
+      const sr = stage.getBoundingClientRect();
+      const k0 = sr.width / VW;
+      for (const b of bursts) {
+        const k = (t - b.at) / 0.95;
+        if (k < 0 || k > 1 || !b.M.vis || !b.M.pill || b.M.pill.style.display === 'none') {
+          b.el.style.display = 'none';
+          continue;
+        }
+        const r = b.M.pill.getBoundingClientRect();
+        const cx = (r.left + r.width * 0.3 - sr.left) / k0;
+        const cy = (r.top + r.height / 2 - sr.top) / k0;
+        const d = b.dist * easeOut(k);
+        const x = cx + Math.cos(b.ang) * d;
+        const y = cy + Math.sin(b.ang) * d - 40 * k;
+        const s2 = (0.4 + 0.8 * easeOutBack(clamp(k * 2.2), 2)) * (b.size / 30);
+        b.el.style.display = '';
+        b.el.style.opacity = k < 0.12 ? k / 0.12 : 1 - Math.pow((k - 0.12) / 0.88, 2);
+        b.el.style.transform = `translate(${x - 15}px, ${y - 15}px) rotate(${b.spin * k}deg) scale(${s2})`;
+      }
+    }
   }
 
   // איפוס מטמון מדידות הטקסט (למשל אחרי שגופן סיים להיטען)
@@ -552,9 +603,6 @@
     fps: S.video.fps,
     width: VW,
     height: VH,
-    markers: [
-      ...S.timeline.joins.map((j) => ({ at: j.at, label: 'הצטרפות: ' + j.group })),
-      ...S.timeline.focus.map((f) => ({ at: f.at, label: 'מיקוד: ' + (f.group || '—') })),
-    ].sort((a, b) => a.at - b.at),
+    markers: S.timeline.joins.map((j) => ({ at: j.at, label: 'הצטרפות: ' + j.group })),
   };
 })();

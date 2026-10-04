@@ -1,12 +1,14 @@
 /*
  * ===================================================================
- *  סצנת קבוצות WhatsApp — קובץ הנתונים העריך
+ *  סצנת קבוצות WhatsApp (קליפ שיווקי, 12 שניות) — קובץ הנתונים העריך
  * ===================================================================
- *  כל מה שמופיע בסרטון מוגדר כאן: הגדרות וידאו, פריסה, ציר זמן (הצטרפות
- *  קבוצות, מיקוד, גלילות), משתתפים, הודעות, תגובות וקבצים.
+ *  כל מה שמופיע בסרטון מוגדר כאן: הגדרות וידאו, טלפונים, מצלמה, אפקטים,
+ *  ציר זמן (מתי כל קבוצה נכנסת), משתתפים, הודעות, תגובות וקבצים.
  *  אחרי עריכה: פתחו את index.html לתצוגה מקדימה, והריצו `npm run render`.
  *
- *  זמנים — בשניות מתחילת הסרטון (at).
+ *  זמנים — בשניות מתחילת הסרטון (at). הודעה עם at אחרי סוף הסרטון לא מוצגת
+ *  (השארנו אותן כדי שכל התסריט יהיה זמין אם מאריכים את הסרטון).
+ *
  *  משתתף שמור באנשי הקשר  → { saved: true, name: '...' }  (מוצג שם בלבד)
  *  משתתף לא שמור          → { phone: '+972 ...', pushName: '...' }
  *                             (מוצג מספר בצבע + "~שם פרופיל" באפור)
@@ -19,73 +21,56 @@
  *    { from, card: {...}, text }                     כרטיס מידע (+כיתוב)
  *    reactions: [{ at, emojis: ['❤️'], count }]      כל רשומה מחליפה את מצב התגובות
  *    time: '10:31'                                   (רשות) שעה מפורשת לבועה
- *    typing: 1.2                                     (רשות) משך "מקליד/ה…" לפני ההודעה, 0 לביטול
+ *    typing: 0.5                                     (רשות) משך "מקליד/ה…" לפני ההודעה, 0 לביטול
  *
  *  file: { kind: 'pdf' | 'doc', name, pages?, size? }   — PDF מוצג עם תצוגה מקדימה מופשטת (בלי תוכן)
  *  card: { title, subtitle?, art? }                      — art: galil | deadsea | eilat | vienna
  *  avatar של משתתף: default (צללית אפורה של WhatsApp), sunset, sea, flower, flower2,
  *                   leaf, mountain, city, balloon, beach, coffee
  *  avatar של קבוצה: galil | deadsea | eilat | vienna.  encryptionNotice: false מסתיר את הודעת ההצפנה
- *  id — מזהה להודעה, כדי לצטט אותה (reply) או לגלול אליה (timeline.scrolls)
+ *  id — מזהה להודעה, כדי לצטט אותה (reply)
  * ===================================================================
  */
 window.SCENE = {
   video: {
     width: 1920,
     height: 1080,
-    fps: 30,
-    duration: 104, // שניות
+    fps: 60,
+    duration: 12, // שניות
   },
 
-  // שעון ההודעות: השעה בתחילת הסרטון, וכמה דקות "עוברות" בכל שנייה בסרטון
-  clock: { start: '10:24', minutesPerSecond: 0.2 },
+  // שעון ההודעות ושורת הסטטוס: השעה בתחילת הסרטון, וכמה דקות "עוברות" בכל שנייה
+  clock: { start: '10:24', minutesPerSecond: 0.5 },
 
-  layout: {
-    margin: 24, // שוליים סביב המסך
-    gap: 20, // רווח בין חלוניות
-    radius: 22, // עיגול פינות החלוניות
-    // עקומת הגדלה: [רוחב החלונית בפיקסלים, פקטור הגדלה של ממשק הטלפון].
-    // חלונית צרה ≈ טלפון של ~390dp; חלונית במיקוד או במסך מלא גדלה כך שהטקסט
-    // גדול וקריא, ושם הקבוצה המלא נכנס בכותרת
-    scaleCurve: [
-      [380, 0.975],
-      [450, 1.1],
-      [655, 1.36],
-      [800, 1.5],
-      [1030, 1.68],
-      [1872, 1.95],
-    ],
-    // כמה רחבה הקבוצה שבמיקוד יחסית לאחרות, לפי מספר הקבוצות על המסך
-    focusBoost: { 1: 0, 2: 0.25, 3: 0.55, 4: 0.72 },
-    dimOthers: 0.26, // עמעום חלוניות שאינן במיקוד (0–1)
-    joinDuration: 1.1, // משך כניסת קבוצה חדשה
-    focusDuration: 0.9, // משך מעבר מיקוד
+  // מידות הטלפונים (בפיקסלים של הווידאו). כל הטלפונים באותו גודל, וממורכזים יחד
+  phones: {
+    width: 440,
+    height: 940,
+    gap: 34, // רווח בין טלפונים
+    bezel: 10, // עובי המסגרת
+    radius: 54, // עיגול פינות המכשיר
+    dpWidth: 365, // רוחב המסך ביחידות dp של אנדרואיד (קובע את גודל הממשק בתוך הטלפון)
+    joinDuration: 0.95, // משך הכניסה של טלפון חדש
+    float: 5, // ריחוף עדין למעלה ולמטה (פיקסלים, 0 לביטול)
+  },
+
+  // מצלמה: זום לפי מספר הטלפונים על המסך — מתחיל קרוב ומתרחק ככל שנוספות קבוצות
+  camera: { zoomByCount: { 1: 1.08, 2: 1.06, 3: 1.03, 4: 0.985 } },
+
+  effects: {
+    messageEnter: 0.32, // משך "קפיצת" הודעה חדשה
+    reactionBursts: true, // אימוג'ים קטנים שעפים מתגובה חדשה
+    joinGlow: true, // הילה ירוקה סביב טלפון שנכנס
+    typingDefault: 0.5, // "מקליד/ה…" בכותרת לפני כל הודעה (שניות)
   },
 
   timeline: {
-    // מתי כל קבוצה נכנסת למסך (הראשונה במסך מלא, הבאות מפצלות אותו)
+    // מתי כל קבוצה נכנסת למסך. הראשונה במרכז, וכל חדשה נכנסת משמאל והכול מתמרכז מחדש
     joins: [
       { group: 'galil', at: 0 },
-      { group: 'deadsea', at: 18.4 },
-      { group: 'eilat', at: 32.4 },
-      { group: 'vienna', at: 46.4 },
-    ],
-    // מיקוד: מאיזה רגע כל קבוצה במיקוד. group: null = ללא מיקוד (כולן שוות)
-    focus: [
-      { at: 0, group: 'galil' },
-      { at: 18.8, group: 'deadsea' },
-      { at: 32.8, group: 'eilat' },
-      { at: 46.8, group: 'vienna' },
-      { at: 59.8, group: 'galil' },
-      { at: 70.0, group: 'deadsea' },
-      { at: 79.0, group: 'eilat' },
-      { at: 88.2, group: 'vienna' },
-      { at: 100.6, group: null },
-    ],
-    // גלילה אל הודעה קודמת (כמו לחיצה על ציטוט), הדגשה, וחזרה למטה
-    scrolls: [
-      { group: 'galil', target: 'g1-pdf', at: 15.3, hold: 1.9 },
-      { group: 'vienna', target: 'g4-pdf', at: 92.2, hold: 2.3, tapReply: 'g4-pickup' },
+      { group: 'deadsea', at: 2.5 },
+      { group: 'eilat', at: 4.9 },
+      { group: 'vienna', at: 7.3 },
     ],
   },
 
@@ -103,42 +88,38 @@ window.SCENE = {
         ran: { phone: '+972 58-663-0417', pushName: 'רן - מחוז חיפה', color: '#7A4FD0', avatar: 'default' },
       },
       messages: [
-        { at: 1.4, type: 'system', text: 'דנה לוי הוסיפה אותך לקבוצה' },
+        { at: 0.45, type: 'system', text: 'דנה לוי הוסיפה אותך לקבוצה' },
         {
-          id: 'g1-welcome', at: 2.8, from: 'dana', text: 'שלום לכולם! אני דנה, אלווה אתכם בנופשון 😊',
+          at: 0.85, from: 'dana', text: 'שלום לכולם! אני דנה, אלווה אתכם בנופשון 😊', typing: 0,
           reactions: [
-            { at: 4.6, emojis: ['❤️'], count: 1 },
-            { at: 7.9, emojis: ['❤️', '👍'], count: 3 },
-            { at: 24.5, emojis: ['❤️', '👍', '🙏'], count: 5 },
+            { at: 1.6, emojis: ['❤️'], count: 1 },
+            { at: 2.4, emojis: ['❤️', '👍'], count: 3 },
           ],
         },
         {
-          id: 'g1-pdf', at: 5.0, from: 'dana', text: 'מצרפת את התוכנית ואת נקודות האיסוף',
+          at: 1.45, from: 'dana', text: 'מצרפת את התוכנית ואת נקודות האיסוף',
           file: { kind: 'pdf', name: 'נופשON גליל - תוכנית ונקודות איסוף.pdf', pages: 2, size: '1.2 MB' },
         },
-        { id: 'g1-hadera', at: 7.4, from: 'avi', text: 'מי עולה מחדרה?' },
-        { at: 9.2, from: 'gil', text: 'אני, מאגף רשת', reply: 'g1-hadera' },
-        { id: 'g1-meet', at: 11.0, from: 'noa', text: 'גם אני, נפגשים בנקודה?' },
-        { at: 12.7, from: 'ran', text: 'אנחנו שניים מחיפה' },
-        { at: 14.2, from: 'dana', text: 'פרטי שתי נקודות האיסוף מופיעים בקובץ 👆', reply: 'g1-meet' },
-        { at: 22.6, from: 'avi', text: 'מצאתי, תודה', reactions: [{ at: 26.0, emojis: ['👍'], count: 1 }] },
-        { at: 41.6, from: 'noa', text: 'מישהו כאן מהשירות באשדוד?' },
-        { at: 52.4, from: 'ran', text: 'הייתי שם לפני כמה שנים' },
-        { id: 'g1-team', at: 61.0, from: 'noa', text: 'רגע, רן מהצוות של מיכל?' },
-        { at: 63.0, from: 'ran', text: 'כן 😂', reply: 'g1-team' },
+        { id: 'g1-hadera', at: 2.05, from: 'avi', text: 'מי עולה מחדרה?' },
+        { at: 2.6, from: 'gil', text: 'אני, מאגף רשת', reply: 'g1-hadera' },
+        { id: 'g1-meet', at: 3.15, from: 'noa', text: 'גם אני, נפגשים בנקודה?' },
+        { at: 3.75, from: 'ran', text: 'אנחנו שניים מחיפה' },
+        { at: 4.4, from: 'dana', text: 'פרטי שתי נקודות האיסוף מופיעים בקובץ 👆', reply: 'g1-meet' },
+        { at: 5.05, from: 'avi', text: 'מצאתי, תודה', reactions: [{ at: 5.6, emojis: ['👍'], count: 1 }] },
+        { at: 5.7, from: 'noa', text: 'מישהו כאן מהשירות באשדוד?' },
+        { at: 6.35, from: 'ran', text: 'הייתי שם לפני כמה שנים' },
+        { id: 'g1-team', at: 7.0, from: 'noa', text: 'רגע, רן מהצוות של מיכל?' },
+        { at: 7.6, from: 'ran', text: 'כן 😂', reply: 'g1-team' },
         {
-          at: 64.7, from: 'noa', text: 'איזה עולם קטן!',
-          reactions: [{ at: 66.0, emojis: ['😂'], count: 1 }, { at: 67.6, emojis: ['😂', '❤️'], count: 3 }],
+          at: 8.25, from: 'noa', text: 'איזה עולם קטן!',
+          reactions: [{ at: 8.8, emojis: ['😂'], count: 1 }, { at: 9.4, emojis: ['😂', '❤️'], count: 3 }],
         },
-        { at: 66.6, from: 'gil', text: 'כבר מתחילים להכיר פה' },
+        { at: 8.95, from: 'gil', text: 'כבר מתחילים להכיר פה' },
         {
-          at: 68.6, from: 'dana', text: 'בדיוק בשביל זה אנחנו כאן 😊',
-          reactions: [{ at: 73.5, emojis: ['❤️'], count: 2 }, { at: 81.0, emojis: ['❤️'], count: 4 }],
+          at: 9.65, from: 'dana', text: 'בדיוק בשביל זה אנחנו כאן 😊',
+          reactions: [{ at: 10.35, emojis: ['❤️'], count: 2 }, { at: 11.1, emojis: ['❤️'], count: 4 }],
         },
-        {
-          at: 86.4, from: 'avi', text: 'יאללה, מחכה כבר לצאת',
-          reactions: [{ at: 93.6, emojis: ['🙌'], count: 2 }],
-        },
+        { at: 10.4, from: 'avi', text: 'יאללה, מחכה כבר לצאת', reactions: [{ at: 11.3, emojis: ['🙌'], count: 2 }] },
       ],
     },
 
@@ -147,6 +128,7 @@ window.SCENE = {
       id: 'deadsea',
       title: 'נופשON | ים המלח | 19–21.11.2026',
       avatar: 'deadsea',
+      encryptionNotice: false,
       participants: {
         tal: { phone: '+972 53-327-8841', pushName: 'טל — נופשON', color: '#1B8A3A', avatar: 'default' },
         uri: { saved: true, name: 'אורי ברק', color: '#B0287A', avatar: 'sea' },
@@ -155,32 +137,30 @@ window.SCENE = {
         yossi: { phone: '+972 50-184-6293', pushName: 'יוסי', color: '#4A55B8', avatar: 'default' },
       },
       messages: [
-        { at: 19.6, type: 'system', text: 'טל אברהם הוסיף אותך לקבוצה' },
+        { at: 2.95, type: 'system', text: 'טל אברהם הוסיף אותך לקבוצה' },
         {
-          at: 21.2, from: 'tal', text: 'ברוכים הבאים! אני טל, המלווה שלכם',
-          reactions: [{ at: 23.0, emojis: ['👋'], count: 1 }, { at: 29.4, emojis: ['👋', '❤️'], count: 4 }],
+          at: 3.35, from: 'tal', text: 'ברוכים הבאים! אני טל, המלווה שלכם', typing: 0,
+          reactions: [{ at: 4.0, emojis: ['👋'], count: 1 }, { at: 5.2, emojis: ['👋', '❤️'], count: 4 }],
         },
-        { id: 'g2-atv', at: 23.6, from: 'uri', text: 'מי בא לטרקטורונים ביום השלישי?' },
-        { at: 25.6, from: 'lior', text: 'אני מגיע לבד, מצטרף', reply: 'g2-atv' },
-        { at: 27.2, from: 'uri', text: 'מעולה 🙌' },
-        { at: 28.8, from: 'keren', text: 'גם אנחנו בעניין' },
-        { id: 'g2-register', at: 30.6, from: 'yossi', text: 'צריך להירשם מראש?' },
+        { id: 'g2-atv', at: 3.9, from: 'uri', text: 'מי בא לטרקטורונים ביום השלישי?' },
+        { at: 4.45, from: 'lior', text: 'אני מגיע לבד, מצטרף', reply: 'g2-atv' },
+        { at: 4.95, from: 'uri', text: 'מעולה 🙌' },
+        { at: 5.45, from: 'keren', text: 'גם אנחנו בעניין' },
+        { id: 'g2-register', at: 6.0, from: 'yossi', text: 'צריך להירשם מראש?' },
         {
-          at: 35.0, from: 'tal', text: 'מצרף את פרטי הפעילות וההרשמה', reply: 'g2-register',
+          at: 6.65, from: 'tal', text: 'מצרף את פרטי הפעילות וההרשמה', reply: 'g2-register',
           card: { title: 'פרטי הפעילות וההרשמה', subtitle: 'נופשON | ים המלח', art: 'deadsea' },
         },
-        { at: 39.6, from: 'keren', text: 'תודה טל' },
-        { at: 45.0, from: 'lior', text: 'מישהו עולה מהמרכז?' },
-        { at: 50.4, from: 'yossi', text: 'אני מראשון' },
-        { at: 55.0, from: 'uri', text: 'גם אני' },
-        { at: 58.8, from: 'lior', text: 'אז נתראה בהסעה', reactions: [{ at: 61.2, emojis: ['👍'], count: 2 }] },
-        { id: 'g2-sms', at: 71.2, from: 'keren', text: 'קיבלתם את ה־SMS עם השובר?' },
-        { at: 73.0, from: 'yossi', text: 'כן, הגיע עכשיו', reply: 'g2-sms' },
-        { id: 'g2-notyet', at: 74.6, from: 'uri', text: 'אצלי עוד לא' },
-        {
-          at: 76.6, from: 'tal', text: 'אורי, כתוב לי בפרטי ואבדוק איתך', reply: 'g2-notyet',
-          reactions: [{ at: 78.4, emojis: ['🙏'], count: 1 }, { at: 85.0, emojis: ['🙏', '👍'], count: 3 }],
-        },
+        { at: 7.3, from: 'keren', text: 'תודה טל' },
+        { at: 7.95, from: 'lior', text: 'מישהו עולה מהמרכז?' },
+        { at: 8.55, from: 'yossi', text: 'אני מראשון' },
+        { at: 9.1, from: 'uri', text: 'גם אני' },
+        { at: 9.7, from: 'lior', text: 'אז נתראה בהסעה', reactions: [{ at: 10.3, emojis: ['👍'], count: 2 }] },
+        { id: 'g2-sms', at: 10.35, from: 'keren', text: 'קיבלתם את ה־SMS עם השובר?' },
+        { at: 10.95, from: 'yossi', text: 'כן, הגיע עכשיו', reply: 'g2-sms' },
+        { id: 'g2-notyet', at: 11.5, from: 'uri', text: 'אצלי עוד לא' },
+        // מחוץ ל־12 השניות:
+        { at: 12.2, from: 'tal', text: 'אורי, כתוב לי בפרטי ואבדוק איתך', reply: 'g2-notyet' },
       ],
     },
 
@@ -189,6 +169,7 @@ window.SCENE = {
       id: 'eilat',
       title: 'נופשON | אילת | 26–29.11.2026',
       avatar: 'eilat',
+      encryptionNotice: false,
       participants: {
         maya: { saved: true, name: 'מאיה ביטון', color: '#C93636', avatar: 'beach' },
         michal: { phone: '+972 54-238-7719', pushName: 'מיכל פרץ - מחוז דן', color: '#7A4FD0', avatar: 'leaf' },
@@ -197,38 +178,36 @@ window.SCENE = {
         elad: { phone: '+972 50-639-8124', pushName: 'אלעד', color: '#9A5B3C', avatar: 'city' },
       },
       messages: [
-        { at: 33.6, type: 'system', text: 'מאיה ביטון הוסיפה אותך לקבוצה' },
+        { at: 5.35, type: 'system', text: 'מאיה ביטון הוסיפה אותך לקבוצה' },
         {
-          at: 35.0, from: 'maya', text: 'שלום לכולם, אני מאיה. אלווה אתכם לאורך הנופשון',
-          reactions: [{ at: 36.8, emojis: ['❤️'], count: 1 }, { at: 48.0, emojis: ['❤️', '😊'], count: 3 }],
+          at: 5.75, from: 'maya', text: 'שלום לכולם, אני מאיה. אלווה אתכם לאורך הנופשון', typing: 0,
+          reactions: [{ at: 6.4, emojis: ['❤️'], count: 1 }, { at: 8.5, emojis: ['❤️', '😊'], count: 3 }],
         },
-        { id: 'g3-roee', at: 37.4, from: 'michal', text: 'רועי? זה אתה מהצוות הישן?' },
-        { at: 39.4, from: 'roee', text: 'מה הסיכוי! לא התראינו שנים', reply: 'g3-roee' },
-        { at: 41.2, from: 'michal', text: 'חייבים להשלים פערים!' },
+        { id: 'g3-roee', at: 6.3, from: 'michal', text: 'רועי? זה אתה מהצוות הישן?' },
+        { at: 6.85, from: 'roee', text: 'מה הסיכוי! לא התראינו שנים', reply: 'g3-roee' },
+        { at: 7.4, from: 'michal', text: 'חייבים להשלים פערים!' },
         {
-          at: 42.8, from: 'roee', text: 'קפה ראשון עליי ☕',
-          reactions: [{ at: 44.2, emojis: ['😂'], count: 1 }, { at: 45.6, emojis: ['😂', '❤️'], count: 2 }],
+          at: 7.95, from: 'roee', text: 'קפה ראשון עליי ☕',
+          reactions: [{ at: 8.55, emojis: ['😂'], count: 1 }, { at: 9.15, emojis: ['😂', '❤️'], count: 2 }],
         },
-        { id: 'g3-kids', at: 49.6, from: 'efrat', text: 'יש פה עוד משפחות עם ילדים?' },
-        { at: 54.0, from: 'elad', text: 'אנחנו עם שניים', reply: 'g3-kids' },
-        { at: 58.4, from: 'efrat', text: 'מעולה, כבר יש להם חברים' },
-        { at: 64.0, from: 'michal', text: 'מישהו רוצה להצטרף לטיילת בערב?' },
-        { at: 67.6, from: 'roee', text: 'ברור' },
-        { at: 75.4, from: 'elad', text: 'גם אנחנו' },
+        { id: 'g3-kids', at: 8.6, from: 'efrat', text: 'יש פה עוד משפחות עם ילדים?' },
+        { at: 9.2, from: 'elad', text: 'אנחנו עם שניים', reply: 'g3-kids' },
+        { at: 9.8, from: 'efrat', text: 'מעולה, כבר יש להם חברים' },
+        { at: 10.4, from: 'michal', text: 'מישהו רוצה להצטרף לטיילת בערב?' },
+        { at: 10.95, from: 'roee', text: 'ברור' },
+        { at: 11.45, from: 'elad', text: 'גם אנחנו' },
+        // מחוץ ל־12 השניות:
         {
-          at: 80.2, from: 'maya', text: 'מצרפת גם את תוכנית הפעילויות למשפחות',
+          at: 12.2, from: 'maya', text: 'מצרפת גם את תוכנית הפעילויות למשפחות',
           file: { kind: 'pdf', name: 'נופשON אילת - תוכנית פעילויות למשפחות.pdf', pages: 3, size: '2.4 MB' },
         },
-        { id: 'g3-kosher', at: 82.4, from: 'efrat', text: 'ואיפה פרטי הכשרות?' },
+        { id: 'g3-kosher', at: 12.8, from: 'efrat', text: 'ואיפה פרטי הכשרות?' },
         {
-          at: 84.2, from: 'maya', text: 'כאן, יחד עם שעות הבריכה בהפרדה', reply: 'g3-kosher',
+          at: 13.4, from: 'maya', text: 'כאן, יחד עם שעות הבריכה בהפרדה', reply: 'g3-kosher',
           card: { title: 'כשרות ושעות בריכה בהפרדה', subtitle: 'נופשON | אילת', art: 'eilat' },
         },
-        { at: 86.2, from: 'elad', text: 'תודה רבה' },
-        {
-          at: 88.0, from: 'efrat', text: 'איזה כיף שהכול מרוכז פה',
-          reactions: [{ at: 89.6, emojis: ['❤️'], count: 2 }],
-        },
+        { at: 14.0, from: 'elad', text: 'תודה רבה' },
+        { at: 14.6, from: 'efrat', text: 'איזה כיף שהכול מרוכז פה' },
       ],
     },
 
@@ -237,6 +216,7 @@ window.SCENE = {
       id: 'vienna',
       title: 'נופשON | וינה | 3–6.12.2026',
       avatar: 'vienna',
+      encryptionNotice: false,
       participants: {
         alon: { phone: '+972 52-904-1186', pushName: 'אלון — נופשON', color: '#1B8A3A', avatar: 'default' },
         shira: { saved: true, name: 'שירה גולן', color: '#1F6FD6', avatar: 'coffee' },
@@ -244,30 +224,31 @@ window.SCENE = {
         anat: { phone: '+972 53-268-9947', pushName: 'ענת - שירות לקוחות', color: '#B0287A', avatar: 'flower2' },
       },
       messages: [
-        { at: 47.6, type: 'system', text: 'אלון שפירא הוסיף אותך לקבוצה' },
+        { at: 7.75, type: 'system', text: 'אלון שפירא הוסיף אותך לקבוצה' },
         {
-          at: 49.0, from: 'alon', text: 'שלום לכולם! אני אלון, אלווה אתכם מהיציאה ועד החזרה',
-          reactions: [{ at: 50.8, emojis: ['❤️'], count: 1 }, { at: 57.0, emojis: ['❤️', '👏'], count: 3 }],
+          at: 8.15, from: 'alon', text: 'שלום לכולם! אני אלון, אלווה אתכם מהיציאה ועד החזרה', typing: 0,
+          reactions: [{ at: 8.8, emojis: ['❤️'], count: 1 }, { at: 10.1, emojis: ['❤️', '👏'], count: 3 }],
         },
-        { at: 51.2, from: 'shira', text: 'איזה כיף 😊' },
-        { id: 'g4-north', at: 53.0, from: 'david', text: 'מי עוד מגיע מהצפון?' },
-        { at: 54.8, from: 'anat', text: 'אנחנו מקריית אתא', reply: 'g4-north' },
-        { at: 56.4, from: 'shira', text: 'אני מחיפה' },
-        { at: 58.2, from: 'david', text: 'אז כבר יש חבורה', reactions: [{ at: 59.4, emojis: ['🙌'], count: 2 }] },
-        { id: 'g4-shuttle', at: 63.0, from: 'anat', text: 'איפה פרטי ההסעה לשדה?' },
+        { at: 8.7, from: 'shira', text: 'איזה כיף 😊' },
+        { id: 'g4-north', at: 9.2, from: 'david', text: 'מי עוד מגיע מהצפון?' },
+        { at: 9.7, from: 'anat', text: 'אנחנו מקריית אתא', reply: 'g4-north' },
+        { at: 10.2, from: 'shira', text: 'אני מחיפה' },
+        { at: 10.7, from: 'david', text: 'אז כבר יש חבורה', reactions: [{ at: 11.25, emojis: ['🙌'], count: 2 }] },
+        { id: 'g4-shuttle', at: 11.25, from: 'anat', text: 'איפה פרטי ההסעה לשדה?' },
+        // מחוץ ל־12 השניות:
         {
-          id: 'g4-pdf', at: 68.0, from: 'alon', text: 'מצרף את פרטי ההגעה והמפגש', reply: 'g4-shuttle',
+          id: 'g4-pdf', at: 12.2, from: 'alon', text: 'מצרף את פרטי ההגעה והמפגש', reply: 'g4-shuttle',
           file: { kind: 'pdf', name: 'נופשON וינה - פרטי הגעה ומפגש.pdf', pages: 2, size: '860 KB' },
         },
-        { at: 72.8, from: 'david', text: 'תודה' },
-        { at: 77.6, from: 'shira', text: 'איפה המידע על ביטוח הנסיעה?' },
-        { at: 83.0, from: 'alon', text: 'מצורף כאן 👇' },
-        { at: 83.9, from: 'alon', typing: 0, file: { kind: 'doc', name: 'ביטוח נסיעות - מידע למשתתפים.docx', size: '420 KB' } },
-        { id: 'g4-sandwich', at: 89.0, from: 'anat', text: 'ואיפה מקבלים את הסנדוויץ והקפה בשדה?' },
-        { id: 'g4-pickup', at: 90.8, from: 'alon', text: 'פרטי האיסוף בהודעה המצורפת', reply: 'g4-pdf' },
-        { at: 96.2, from: 'david', text: 'מישהו מצטרף לסיבוב בעיר בזמן החופשי?' },
-        { at: 97.8, from: 'shira', text: 'אני!' },
-        { at: 99.2, from: 'anat', text: 'גם אנחנו 🙋‍♀️', reactions: [{ at: 100.8, emojis: ['🎉'], count: 2 }] },
+        { at: 12.8, from: 'david', text: 'תודה' },
+        { at: 13.4, from: 'shira', text: 'איפה המידע על ביטוח הנסיעה?' },
+        { at: 14.0, from: 'alon', text: 'מצורף כאן 👇' },
+        { at: 14.5, from: 'alon', typing: 0, file: { kind: 'doc', name: 'ביטוח נסיעות - מידע למשתתפים.docx', size: '420 KB' } },
+        { id: 'g4-sandwich', at: 15.1, from: 'anat', text: 'ואיפה מקבלים את הסנדוויץ והקפה בשדה?' },
+        { at: 15.7, from: 'alon', text: 'פרטי האיסוף בהודעה המצורפת', reply: 'g4-pdf' },
+        { at: 16.3, from: 'david', text: 'מישהו מצטרף לסיבוב בעיר בזמן החופשי?' },
+        { at: 16.9, from: 'shira', text: 'אני!' },
+        { at: 17.5, from: 'anat', text: 'גם אנחנו 🙋‍♀️' },
       ],
     },
   ],
