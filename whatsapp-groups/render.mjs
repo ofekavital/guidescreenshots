@@ -7,6 +7,8 @@
  *   node render.mjs --fps 60 --workers 4    60fps בארבעה תהליכים
  *   node render.mjs --from 10 --to 20       קטע בלבד
  *   node render.mjs --stills 3,20,50        תמונות סטילס (PNG) לבדיקה → output/stills
+ *   node render.mjs --ss 1                  בלי דגימת־יתר (מהיר יותר; ברירת המחדל 2 — מרנדר
+ *                                           פי 2 ומקטין ל־1080p, כדי שטקסט בתנועה לא ירצד)
  *
  * משתני סביבה: CHROME_PATH (נתיב לכרום/כרומיום), FFMPEG (נתיב ל־ffmpeg)
  */
@@ -30,6 +32,7 @@ const args = Object.fromEntries(
     })
 );
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
+const SS = Number(args.ss || (args.stills ? 1 : 2)); // supersampling
 
 /* ---------- שרת סטטי קטן ---------- */
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png' };
@@ -55,7 +58,7 @@ const browser = await chromium.launch({
 });
 
 async function openPage() {
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: SS });
   page.on('pageerror', (e) => console.error('page error:', e.message));
   page.on('console', (m) => m.type() === 'error' && console.error('console:', m.text()));
   await page.goto(URL_);
@@ -71,12 +74,13 @@ async function openPage() {
   return { page, shot, meta };
 }
 
-function ffmpegProc(out, fps, extra = []) {
+function ffmpegProc(out, fps, size, extra = []) {
   const p = spawn(
     FFMPEG,
     [
       '-y', '-loglevel', 'error',
       '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', '-',
+      ...(SS > 1 ? ['-vf', `scale=${size.width}:${size.height}:flags=lanczos`] : []),
       '-c:v', 'libx264', '-preset', args.preset || 'slow', '-crf', String(args.crf || 16),
       '-tune', 'animation', '-pix_fmt', 'yuv420p', '-r', String(fps),
       ...extra, out,
@@ -112,7 +116,7 @@ try {
     await mkdir(dirname(out), { recursive: true });
     const tmp = join(ROOT, 'output', '.segments');
     await mkdir(tmp, { recursive: true });
-    console.log(`rendering ${total} frames @ ${fps}fps (${from}s–${to}s) with ${workers} workers`);
+    console.log(`rendering ${total} frames @ ${fps}fps (${from}s–${to}s) with ${workers} workers, supersampling ×${SS}`);
     const t0 = Date.now();
     let doneFrames = 0;
     const per = Math.ceil(total / workers);
@@ -125,7 +129,7 @@ try {
         const { shot } = w === 0 ? probe : await openPage();
         const seg = join(tmp, `seg_${w}.mp4`);
         segs[w] = seg;
-        const ff = ffmpegProc(seg, fps);
+        const ff = ffmpegProc(seg, fps, probe.meta);
         for (let i = a; i < b; i++) {
           await write(ff.p.stdin, await shot(from + i / fps));
           doneFrames++;

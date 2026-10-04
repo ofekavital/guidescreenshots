@@ -7,7 +7,7 @@
   "scripts": {
     "render": "node render.mjs",
     "render:30": "node render.mjs --fps 30 --out output/whatsapp-groups-30fps.mp4",
-    "stills": "node render.mjs --stills 0.5,1.5,3,4,5.5,8,10,11.9",
+    "stills": "node render.mjs --stills 1,3,4.5,7,9.5,12,14.9",
     "preview": "npx --yes http-server -p 8080 -c-1 .",
     "fonts": "node tools/build-fonts.mjs"
   },

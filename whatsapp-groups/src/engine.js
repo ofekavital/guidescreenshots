@@ -19,6 +19,7 @@
   const lerp = (a, b, k) => a + (b - a) * k;
   const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
   const easeOut = (k) => 1 - Math.pow(1 - k, 3);
+  const easeOutQuart = (k) => 1 - Math.pow(1 - k, 4);
   const easeOutBack = (k, c1 = 1.4) => 1 + (c1 + 1) * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
   const esc = (s) =>
     String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -33,10 +34,8 @@
     return e;
   };
 
-  const ENTER = FX.messageEnter || 0.32; // משך כניסת הודעה
+  const ENTER = FX.messageEnter || 0.5; // משך כניסת הודעה
   const TYPING_DEFAULT = FX.typingDefault == null ? 0.5 : FX.typingDefault;
-  // קפיץ מרוסן: מגיע ל־1 עם "קפיצה" קטנה מעבר (overshoot) — תנועה חיה ודינמית
-  const spring = (k) => (k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-9 * k) * Math.cos(8 * k));
 
   // הזנב של בועה נכנסת. בעברית הבועה בצד ימין והזנב בפינה הימנית העליונה
   const TAIL = '<svg viewBox="0 0 8 12"><path fill="currentColor" d="M0 0h6.2c1.5 0 2.2 1.5 1.2 2.6L0 11.6z"/></svg>';
@@ -60,9 +59,10 @@
       M.first = !M.isSystem && (!prev || prev.isSystem || prev.from !== m.from);
       M.timeStr = m.time || clockAt(m.at);
       if (!M.isSystem) {
+        // "מקליד/ה…" רק כשיש רווח אמיתי מההודעה הקודמת בקבוצה, כדי שהכותרת לא תהבהב
         const dur = m.typing == null ? TYPING_DEFAULT : m.typing;
-        const start = Math.max(m.at - dur, prev ? prev.at + 0.18 : -1);
-        M.typingFrom = dur > 0 && start < m.at - 0.2 ? start : null;
+        const len = Math.min(dur, prev ? m.at - prev.at - 0.6 : dur);
+        M.typingFrom = dur > 0 && len >= 0.45 ? m.at - len : null;
       }
       if (m.id) G.byId[m.id] = M;
       G.msgs.push(M);
@@ -384,11 +384,11 @@
 
   /* ---------------- פריסה ----------------
    * כל הטלפונים באותו גודל, בשורה אחת ממורכזת. קבוצה חדשה נכנסת משמאל
-   * (סדר עברי: הראשונה מימין), והשורה כולה מתמרכזת מחדש בתנועת קפיץ. */
+   * (סדר עברי: הראשונה מימין), והשורה כולה מתמרכזת מחדש בתנועה רכה. */
   function computeLayout(t) {
     const active = joinOrder.filter((g) => t >= g.joinAt);
     const enter = active.map((g) => clamp((t - g.joinAt) / PH.joinDuration));
-    const pres = active.map((g, i) => (i === 0 ? 1 : spring(enter[i])));
+    const pres = active.map((g, i) => (i === 0 ? 1 : easeInOut(enter[i])));
     const total = pres.reduce((a, p, i) => a + PH.width * p + (i ? PH.gap * p : 0), 0);
     const y0 = (VH - PH.height) / 2;
     let right = (VW + total) / 2;
@@ -416,7 +416,7 @@
     for (const r of M.reactions) if (t >= r.at) cur = r;
     if (!cur) return null;
     const firstAt = M.reactions[0].at;
-    return { r: cur, pop: clamp((t - cur.at) / 0.45), appear: clamp((t - firstAt) / 0.3) };
+    return { r: cur, pop: clamp((t - cur.at) / 0.4), appear: clamp((t - firstAt) / 0.45) };
   }
 
   function updateChat(G, t) {
@@ -449,10 +449,10 @@
           }
           M.pill.style.display = '';
           const k = rs.pop;
-          const sc = k < 1 ? 0.55 + 0.45 * easeOutBack(k, 2.2) : 1;
+          const sc = k < 1 ? 0.6 + 0.4 * easeOutBack(k, 1.3) : 1;
           M.pill.style.transform = `scale(${sc})`;
           M.pill.style.opacity = rs.appear < 1 ? clamp(rs.appear * 2) : 1;
-          M.inner.style.paddingBottom = 19 * easeOut(rs.appear) + 'px';
+          M.inner.style.paddingBottom = 19 * easeInOut(rs.appear) + 'px';
         }
       }
     }
@@ -460,10 +460,10 @@
     const heights = visible.map((M) => M.inner.offsetHeight);
     visible.forEach((M, i) => {
       const k = clamp((t - M.at) / ENTER);
-      const e = easeOut(k);
+      const e = easeOutQuart(k);
       M.wrap.style.height = heights[i] * e + 'px';
-      M.inner.style.opacity = k < 1 ? clamp(k * 2.2) : 1;
-      M.inner.style.transform = k < 1 ? `translateY(${(1 - e) * 14}px) scale(${0.9 + 0.1 * easeOutBack(k, 1.2)})` : 'none';
+      M.inner.style.opacity = k < 1 ? clamp(k * 1.8) : 1;
+      M.inner.style.transform = k < 1 ? `translateY(${(1 - e) * 10}px) scale(${0.97 + 0.03 * e})` : 'none';
       M.hl.style.opacity = 0;
     });
 
@@ -515,7 +515,7 @@
         G.subTyping.innerHTML = `${esc(typingLabel(person(G, typer.from)))} מקליד/ה…`;
         G.typingKey = key;
       }
-      ty = Math.min(clamp((t - typer.typingFrom) / 0.12), clamp((typer.at - t) / 0.1));
+      ty = Math.min(easeInOut(clamp((t - typer.typingFrom) / 0.22)), easeInOut(clamp((typer.at - t) / 0.18)));
     }
     G.subTyping.style.opacity = ty;
     G.subMembers.style.opacity = 1 - ty;
@@ -528,12 +528,15 @@
       const a = t * (0.35 + i * 0.12) + i * 2.1;
       b.style.transform = `translate(${Math.cos(a) * 140}px, ${Math.sin(a * 1.3) * 90}px)`;
     });
-    doodles.style.backgroundPosition = `${-t * 14}px ${-t * 22}px`;
+    doodles.style.backgroundPosition = `${-t * 6}px ${-t * 9}px`;
 
     const lay = computeLayout(t);
     const { nEff } = lay.pop();
     const zoom = zoomFor(nEff);
-    world.style.transform = `scale(${zoom})`;
+    world.style.transform = zoom === 1 ? 'none' : `scale(${zoom})`;
+    // הצמדה לרשת הפיקסלים של המסך, כדי שטקסט בתנועה איטית לא "ירצד" בין פריימים
+    const dpr = window.devicePixelRatio || 1;
+    const snap = (v) => (zoom === 1 ? Math.round(v * dpr) / dpr : v);
 
     const clockStr = clockAt(t);
     const shown = new Set();
@@ -542,19 +545,20 @@
       shown.add(G);
       const P = G.phone;
       if (P.style.display === 'none') P.style.display = '';
-      // כניסה: הטלפון עולה מלמטה, מסתובב קלות ומתייצב בקפיץ
-      const e = spring(it.enter);
-      const ey = 1 - Math.pow(1 - it.enter, 4);
+      // כניסה: הטלפון עולה מלמטה ומתייצב בתנועה רכה, בלי קפיצה מעבר ליעד
+      const e = easeOut(it.enter);
       const fl = (PH.float || 0) * Math.sin(t * 1.7 + G.order * 1.9) * clamp(it.enter * 2);
-      const ty = (1 - ey) * 480 + fl;
-      const sc = 0.84 + 0.16 * e;
-      const rot = (1 - ey) * -6;
-      P.style.transform = `translate(${it.x}px, ${it.y + ty}px) rotate(${rot}deg) scale(${sc})`;
-      P.style.opacity = clamp(it.enter * 4);
+      const ty = (1 - e) * (PH.enterRise == null ? 380 : PH.enterRise) + fl;
+      // ההגדלה מסתיימת לפני סוף התנועה, כך שהסוף האיטי הוא הזזה בלבד (בלי ריצוד של טקסט)
+      const sc = 0.94 + 0.06 * easeOut(clamp(it.enter / 0.65));
+      const rot = (1 - e) * (PH.enterTilt || 0);
+      const tr = `translate(${snap(it.x)}px, ${snap(it.y + ty)}px)`;
+      P.style.transform = rot || sc !== 1 ? `${tr} rotate(${rot}deg) scale(${sc})` : tr;
+      P.style.opacity = easeOut(clamp(it.enter * 2.5));
       P.style.zIndex = 10 + G.order;
 
-      const gk = clamp((t - G.joinAt - 0.15) / 1.1);
-      G.glow.style.opacity = FX.joinGlow && gk > 0 && gk < 1 ? Math.sin(gk * Math.PI) * 0.9 : 0;
+      const gk = clamp((t - G.joinAt - 0.2) / 1.6);
+      G.glow.style.opacity = FX.joinGlow && gk > 0 && gk < 1 ? Math.sin(gk * Math.PI) * 0.55 : 0;
 
       if (G.clock.textContent !== clockStr) G.clock.textContent = clockStr;
       fitText(G.titleEl, G.title, '500 17px', G.titleFit);
