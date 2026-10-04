@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="he">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>קבוצות WhatsApp — מושן</title>
+    <link rel="stylesheet" href="src/fonts.css" />
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div id="viewport"><div id="stage"></div></div>
+    <div id="controls">
+      <button id="play">▶ נגן</button>
+      <input id="scrub" type="range" min="0" step="0.01" value="0" />
+      <span class="tc" id="tc">0.00</span>
+      <select id="speed">
+        <option value="0.5">×0.5</option>
+        <option value="1" selected>×1</option>
+        <option value="2">×2</option>
+      </select>
+      <select id="marks"></select>
+    </div>
+    <div class="hint">רווח = נגן/עצור · חצים = ±1 שנייה · הנתונים לעריכה: data/scene.js</div>
+
+    <script src="data/scene.js"></script>
+    <script src="src/art.js"></script>
+    <script src="src/engine.js"></script>
+    <script>
+      (function () {
+        const params = new URLSearchParams(location.search);
+        const render = params.has('render');
+        const WA = window.WA;
+        // טעינה מוקדמת של כל משקלי הגופנים, כדי שמדידות הטקסט יהיו מדויקות מהפריים הראשון
+        const faces = ['Roboto', 'Noto Sans Hebrew'].flatMap((f) =>
+          [400, 500, 700].map((w) => document.fonts.load(`${w} 16px "${f}"`, f === 'Roboto' ? 'Aa1' : 'אב'))
+        );
+        WA.ready = Promise.all(faces)
+          .then(() => document.fonts.ready)
+          .then(() => {
+            WA.invalidate();
+            WA.seek(0);
+          });
+        if (render) return; // מצב רינדור: render.mjs שולט ב־seek
+
+        document.body.classList.add('preview');
+        const vp = document.getElementById('viewport');
+        const stage = document.getElementById('stage');
+        const scrub = document.getElementById('scrub');
+        const tc = document.getElementById('tc');
+        const playBtn = document.getElementById('play');
+        const speed = document.getElementById('speed');
+        const marks = document.getElementById('marks');
+        scrub.max = WA.duration;
+        marks.innerHTML =
+          '<option value="">קפיצה…</option>' +
+          WA.markers.map((m) => `<option value="${m.at}">${m.at.toFixed(1)} — ${m.label}</option>`).join('');
+
+        function fit() {
+          const s = Math.min((innerWidth - 32) / WA.width, (innerHeight - 110) / WA.height);
+          stage.style.transform = `scale(${s})`;
+          vp.style.width = WA.width * s + 'px';
+          vp.style.height = WA.height * s + 'px';
+        }
+        addEventListener('resize', fit);
+        fit();
+
+        let t = parseFloat(params.get('t') || '0');
+        let playing = false;
+        let last = 0;
+        function show() {
+          WA.seek(t);
+          scrub.value = t;
+          tc.textContent = t.toFixed(2) + ' / ' + WA.duration;
+        }
+        function loop(now) {
+          if (!playing) return;
+          const dt = (now - last) / 1000;
+          last = now;
+          t += dt * parseFloat(speed.value);
+          if (t >= WA.duration) {
+            t = WA.duration;
+            playing = false;
+            playBtn.textContent = '▶ נגן';
+          }
+          show();
+          if (playing) requestAnimationFrame(loop);
+        }
+        function toggle() {
+          playing = !playing;
+          playBtn.textContent = playing ? '❚❚ עצור' : '▶ נגן';
+          if (playing) {
+            if (t >= WA.duration) t = 0;
+            last = performance.now();
+            requestAnimationFrame(loop);
+          }
+        }
+        playBtn.onclick = toggle;
+        scrub.oninput = () => {
+          t = parseFloat(scrub.value);
+          show();
+        };
+        marks.onchange = () => {
+          if (marks.value !== '') t = parseFloat(marks.value);
+          marks.value = '';
+          show();
+        };
+        addEventListener('keydown', (e) => {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            toggle();
+          } else if (e.code === 'ArrowRight') {
+            t = Math.min(WA.duration, t + 1);
+            show();
+          } else if (e.code === 'ArrowLeft') {
+            t = Math.max(0, t - 1);
+            show();
+          }
+        });
+        WA.ready.then(show);
+      })();
+    </script>
+  </body>
+</html>

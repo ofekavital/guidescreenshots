@@ -1,0 +1,827 @@
+/*
+ * עיצוב הסצנה. כל המידות בתוך .screen הן ביחידות dp של אנדרואיד (1px = 1dp),
+ * והחלונית כולה מוגדלת עם transform: scale לפי הרוחב שלה במסך.
+ */
+:root {
+  --wa-header-bg: #ffffff;
+  --wa-title: #111b21;
+  --wa-sub: #667781;
+  --wa-icon: #3b4a54;
+  --wa-chat-bg: #efeae2;
+  --wa-in-bg: #ffffff;
+  --wa-text: #111b21;
+  --wa-time: #667781;
+  --wa-system-bg: #ffffff;
+  --wa-system-text: #54656f;
+  --wa-crypto-bg: #fff3c4;
+  --wa-quote-bg: rgba(11, 20, 26, 0.05);
+  --wa-green: #1daa61;
+  --wa-green-bright: #25d366;
+  --wa-input-icon: #8696a0;
+  --wa-link: #027eb5;
+  --stage-bg-1: #08130f;
+  --stage-bg-2: #0d2219;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #050b08;
+}
+
+body {
+  font-family: 'Roboto', 'Noto Sans Hebrew', 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* ---------------- הבמה ---------------- */
+#stage {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 800px at 85% 10%, rgba(37, 211, 102, 0.13), transparent 60%),
+    radial-gradient(1000px 700px at 10% 95%, rgba(0, 168, 132, 0.14), transparent 60%),
+    linear-gradient(160deg, var(--stage-bg-2), var(--stage-bg-1));
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--wa-chat-bg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+  transform-origin: 50% 50%;
+}
+
+.panel .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 3px var(--wa-green-bright);
+  opacity: 0;
+  z-index: 5;
+}
+
+.panel .dim {
+  position: absolute;
+  inset: 0;
+  background: #06120d;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform-origin: 100% 0;
+  display: flex;
+  flex-direction: column;
+  direction: rtl;
+  background: var(--wa-chat-bg);
+  color: var(--wa-text);
+}
+
+/* ---------------- כותרת הצ'אט ---------------- */
+.wa-header {
+  flex: 0 0 auto;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  padding: 0 2px 0 4px;
+  background: var(--wa-header-bg);
+  border-bottom: 1px solid rgba(11, 20, 26, 0.06);
+  position: relative;
+  z-index: 3;
+}
+
+.wa-header .ic {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wa-icon);
+  flex: 0 0 auto;
+}
+
+.wa-header .ic svg {
+  width: 24px;
+  height: 24px;
+}
+
+.wa-header .back {
+  width: 34px;
+  margin-inline-end: -2px;
+}
+
+.wa-header .back svg {
+  transform: scaleX(-1); /* חץ "חזרה" מצביע ימינה בממשק RTL */
+}
+
+.wa-header .gavatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: 0 0 auto;
+  margin-inline-end: 10px;
+}
+
+.gavatar svg,
+.avatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wa-header .titles {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.wa-header .title {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--wa-title);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.wa-header .subwrap {
+  position: relative;
+  height: 18px;
+}
+
+.wa-header .sub {
+  position: absolute;
+  inset: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wa-sub);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.wa-header .sub.typing {
+  text-overflow: ellipsis;
+}
+
+.wa-header .sub.typing {
+  color: var(--wa-green);
+  opacity: 0;
+}
+
+.wa-header .icons {
+  display: flex;
+  flex: 0 0 auto;
+  margin-inline-start: 4px;
+}
+
+.wa-header .icons .ic {
+  width: 40px;
+}
+
+/* ---------------- אזור הצ'אט ---------------- */
+.chat {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  background-color: var(--wa-chat-bg);
+  background-repeat: repeat;
+  background-size: 340px 340px;
+}
+
+.scroller {
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  padding: 0 0 6px;
+}
+
+.msg-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+.msg-inner {
+  position: relative;
+  transform-origin: 100% 100%;
+}
+
+.msg-hl {
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  background: rgba(37, 211, 102, 0.22);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* צ'יפים של מערכת: תאריך, הצטרפות, הצפנה */
+.sys-row {
+  display: flex;
+  justify-content: center;
+  padding: 8px 40px 2px;
+}
+
+.chip {
+  max-width: 100%;
+  background: var(--wa-system-bg);
+  color: var(--wa-system-text);
+  font-size: 12.5px;
+  line-height: 17px;
+  padding: 5px 12px 5px;
+  border-radius: 8px;
+  box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+  text-align: center;
+}
+
+.chip.date {
+  font-size: 12.5px;
+  padding: 5px 12px;
+  font-weight: 500;
+}
+
+.chip.crypto {
+  background: var(--wa-crypto-bg);
+  color: #54656f;
+  padding: 7px 12px 8px;
+  line-height: 18px;
+  max-width: 330px;
+}
+
+.chip.crypto .lock {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  vertical-align: -1px;
+  margin-inline-end: 3px;
+}
+
+.chip.crypto .lock svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chip.crypto .more {
+  color: var(--wa-link);
+}
+
+/* שורת הודעה נכנסת (בעברית: בצד ימין) */
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 2px 8px 0 56px;
+}
+
+.msg-row.first {
+  padding-top: 8px;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: 0 0 auto;
+  margin-inline-end: 9px;
+}
+
+.avatar.spacer {
+  visibility: hidden;
+  height: 1px;
+}
+
+.bubble {
+  position: relative;
+  background: var(--wa-in-bg);
+  border-radius: 8px;
+  padding: 6px 8px 7px 9px;
+  min-width: 70px;
+  max-width: 100%;
+  box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+}
+
+.msg-row.first .bubble {
+  border-start-start-radius: 0;
+}
+
+.bubble .tail {
+  position: absolute;
+  top: 0;
+  right: -8px;
+  width: 8px;
+  height: 12px;
+  color: var(--wa-in-bg);
+  display: none;
+}
+
+.msg-row.first .bubble .tail {
+  display: block;
+}
+
+.bubble .tail svg {
+  display: block;
+  width: 8px;
+  height: 12px;
+}
+
+/* כותרת הבועה: מספר טלפון / שם בצבע, ולצדו ~שם פרופיל באפור */
+.sender {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 2px;
+  min-width: 0;
+}
+
+.sender .primary {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 19px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.sender .push {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--wa-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-inline-start: auto;
+  min-width: 0;
+}
+
+.ltr-iso {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.text {
+  font-size: 16px;
+  line-height: 21px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.time-spacer {
+  display: inline-block;
+  width: 46px;
+  height: 10px;
+}
+
+.time {
+  position: absolute;
+  left: 8px;
+  bottom: 4px;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--wa-time);
+  direction: ltr;
+}
+
+/* ציטוט של הודעה קודמת */
+.quote {
+  position: relative;
+  display: flex;
+  background: var(--wa-quote-bg);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 2px -3px 5px -4px;
+  min-width: 0;
+}
+
+.quote .bar {
+  flex: 0 0 4px;
+}
+
+.quote .qbody {
+  padding: 5px 8px 6px 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.quote .qname {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quote .qtext {
+  font-size: 13.5px;
+  line-height: 18px;
+  color: var(--wa-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quote .qtext .qicon {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin-inline-end: 3px;
+  color: #8696a0;
+}
+
+.quote .ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  background: rgba(11, 20, 26, 0.18);
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+}
+
+/* קובץ PDF / מסמך */
+.bubble.has-file,
+.bubble.has-card {
+  width: 286px;
+  max-width: 100%;
+  padding: 4px 4px 7px;
+}
+
+.bubble.has-file .sender,
+.bubble.has-card .sender,
+.bubble.has-file .quote,
+.bubble.has-card .quote {
+  margin-left: 4px;
+  margin-right: 5px;
+}
+
+.bubble.has-file .sender,
+.bubble.has-card .sender {
+  margin-top: 2px;
+}
+
+.doc {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f5f6f6;
+}
+
+.doc .preview {
+  height: 118px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(11, 20, 26, 0.06);
+}
+
+.doc .preview svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.doc .row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 10px;
+}
+
+.doc .ficon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 34px;
+  border-radius: 3px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5px;
+  color: #fff;
+  font: 700 8px/1 'Roboto', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.doc .ficon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  background: linear-gradient(225deg, #f5f6f6 50%, rgba(255, 255, 255, 0.55) 50%);
+}
+
+.doc .ficon.pdf {
+  background: #e5443b;
+}
+
+.doc .ficon.doc {
+  background: #3b7be0;
+}
+
+.doc .fmeta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.doc .fname {
+  font-size: 14.5px;
+  line-height: 19px;
+  color: var(--wa-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.doc .finfo {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wa-sub);
+  margin-top: 2px;
+}
+
+.caption {
+  padding: 5px 5px 0 4px;
+}
+
+.caption.empty {
+  padding-top: 2px;
+}
+
+.caption.empty .text {
+  line-height: 12px;
+}
+
+/* כרטיס מידע */
+.card {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f5f6f6;
+}
+
+.card .art {
+  height: 112px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card .art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.card .art .badge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1daa61;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 19px/1 'Roboto', sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.card .cbody {
+  padding: 8px 10px 9px;
+}
+
+.card .ctitle {
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 19px;
+  color: var(--wa-text);
+}
+
+.card .csub {
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--wa-sub);
+  margin-top: 1px;
+}
+
+/* תגובות אימוג'י */
+.reactions {
+  position: absolute;
+  right: 10px;
+  bottom: -18px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2px 6px 2px 6px;
+  height: 24px;
+  box-shadow: 0 0 0 1.5px var(--wa-chat-bg), 0 1px 2px rgba(11, 20, 26, 0.2);
+  transform-origin: 70% 50%;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.reactions .em {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.reactions .cnt {
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--wa-sub);
+  margin-inline-start: 4px;
+  font-weight: 500;
+}
+
+/* ---------------- שורת הקלדה ---------------- */
+.wa-input {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 6px 6px 8px 6px;
+  background: transparent;
+  position: relative;
+  z-index: 3;
+}
+
+.wa-input .field {
+  flex: 1 1 auto;
+  height: 48px;
+  border-radius: 24px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+  min-width: 0;
+}
+
+.wa-input .field .ic {
+  width: 38px;
+  height: 40px;
+  color: var(--wa-input-icon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.wa-input .field .ic svg {
+  width: 24px;
+  height: 24px;
+}
+
+.wa-input .field .ic.attach svg {
+  transform: rotate(45deg);
+}
+
+.wa-input .placeholder {
+  flex: 1 1 auto;
+  font-size: 17px;
+  color: var(--wa-input-icon);
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+.wa-input .mic {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--wa-green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(11, 20, 26, 0.2);
+}
+
+.wa-input .mic svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* כפתור "גלילה למטה" שמופיע כשהצ'אט גלול למעלה */
+.fab-down {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: #54656f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(11, 20, 26, 0.25);
+  opacity: 0;
+  z-index: 3;
+}
+
+.fab-down svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* ---------------- מצב תצוגה מקדימה (לא בזמן רינדור) ---------------- */
+body.preview {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #111;
+  color: #ddd;
+  font-family: 'Noto Sans Hebrew', 'Roboto', sans-serif;
+}
+
+body.preview #viewport {
+  position: relative;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+body.preview #stage {
+  transform-origin: 0 0;
+}
+
+#controls {
+  display: none;
+}
+
+body.preview #controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  direction: ltr;
+  padding: 12px 16px;
+  width: min(100vw - 32px, 1280px);
+}
+
+#controls button {
+  background: #1daa61;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 70px;
+}
+
+#controls input[type='range'] {
+  flex: 1;
+}
+
+#controls .tc {
+  font: 14px/1 'Roboto', monospace;
+  min-width: 110px;
+  text-align: center;
+}
+
+#controls select {
+  background: #222;
+  color: #ddd;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+body.preview .hint {
+  font-size: 13px;
+  color: #888;
+  padding-bottom: 16px;
+  direction: rtl;
+}

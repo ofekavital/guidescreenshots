@@ -1,0 +1,17 @@
+{
+  "name": "whatsapp-groups-motion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "סצנת מושן גרפיקס של קבוצות WhatsApp בעברית (16:9) — מקור עריך ורינדור ל-MP4",
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs",
+    "render:60": "node render.mjs --fps 60 --out output/whatsapp-groups-60fps.mp4",
+    "stills": "node render.mjs --stills 1,3.5,9,16.5,24,29,36,44,50,58,62,66,73,82,86,93.5,99,103",
+    "preview": "npx --yes http-server -p 8080 -c-1 .",
+    "fonts": "node tools/build-fonts.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}
