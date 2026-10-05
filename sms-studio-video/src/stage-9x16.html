@@ -7,8 +7,6 @@
 <link rel="stylesheet" href="../node_modules/@fontsource/heebo/500.css">
 <link rel="stylesheet" href="../node_modules/@fontsource/heebo/600.css">
 <link rel="stylesheet" href="../node_modules/@fontsource/heebo/700.css">
-<link rel="stylesheet" href="../node_modules/@fontsource/arimo/400.css">
-<link rel="stylesheet" href="../node_modules/@fontsource/arimo/700.css">
 <style>
 :root{
   --blue:#2D3396;--blue-2:#242A7E;--orange:#E0520B;--sky:#5F9AE5;
@@ -17,26 +15,32 @@
 *{box-sizing:border-box}
 html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#2D3396}
 body{font-family:Heebo,sans-serif;-webkit-font-smoothing:antialiased}
-#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#E6E8EC}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#E9ECF1}
 .layer{position:absolute;inset:0}
-#bg{background:radial-gradient(1100px 1500px at 65% 25%,#F4F6F9 0%,#E2E5EA 100%)}
-#bgApp{background:radial-gradient(1000px 1600px at 50% 40%,#F5F7FB 0%,#E3E8F0 70%,#DCE2EC 100%);opacity:0}
+#bg{background:radial-gradient(1100px 1500px at 65% 25%,#F6F8FB 0%,#E4E8EF 100%)}
 
-/* app card / camera / devices */
-#rig{transform-origin:540px 960px}
-#deviceChrome{position:absolute;left:0;top:0;opacity:0;background:#1B2030;
-  box-shadow:0 40px 90px rgba(24,32,64,.28),0 0 0 1px rgba(255,255,255,.06) inset}
-#deviceNotch{position:absolute;left:0;top:0;width:110px;height:24px;background:#1B2030;border-radius:0 0 14px 14px;opacity:0}
-#laptopBase{position:absolute;left:0;top:0;opacity:0;height:30px;background:linear-gradient(#D9DDE5,#AEB5C2);border-radius:2px 2px 20px 20px;
-  box-shadow:0 22px 40px rgba(24,32,64,.25)}
-#laptopBase::before{content:'';position:absolute;left:50%;top:0;width:170px;height:11px;margin-left:-85px;background:#9AA1AE;border-radius:0 0 11px 11px}
-#appLayer{transform-origin:540px 960px}
-#appCard{position:absolute;left:0;top:0;width:1080px;height:1920px}
-#appWrap{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;background:#EEF1F5}
-#appFrame{display:block;border:0;width:390px;height:700px;background:#EEF1F5}
+/* device (desktop monitor -> laptop -> phone), drawn around the real app */
+#devLayer{transform-origin:540px 960px;opacity:0}
+#dNeck,#dFoot,#dBase,#dBody,#dScreen,#dNotch{position:absolute;left:0;top:0}
+#dBody{background:#1B2030;box-shadow:0 46px 90px rgba(24,32,64,.26),0 0 0 1px rgba(255,255,255,.06) inset}
+#dNeck{background:linear-gradient(90deg,#B9C0CC,#D9DEE6 45%,#AEB6C3);border-radius:0 0 6px 6px}
+#dFoot{background:linear-gradient(#D7DCE4,#AFB7C4);border-radius:10px 10px 14px 14px;box-shadow:0 18px 30px rgba(24,32,64,.2)}
+#dBase{background:linear-gradient(#D9DDE5,#AEB5C2);border-radius:2px 2px 22px 22px;box-shadow:0 22px 40px rgba(24,32,64,.25)}
+#dBase::before{content:'';position:absolute;left:50%;top:0;width:18%;height:38%;transform:translateX(-50%);background:#9AA1AE;border-radius:0 0 12px 12px}
+#dScreen{overflow:hidden;background:#EEF1F5}
+#dWrap,#zWrap{position:absolute;left:0;top:0;transform-origin:0 0}
+#dFrame{display:block;border:0;width:1280px;height:800px;background:#EEF1F5}
+#dNotch{background:#1B2030}
 
-/* legacy */
-#legacyLayer{transform-origin:540px 1185px}
+/* magnifier lens: the second real app instance, shown at 1.6–3x */
+#lensLayer{opacity:0}
+#lensCone{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:visible}
+#lensCone polygon{fill:rgba(95,154,229,.10)}
+#lensCone line{stroke:rgba(95,154,229,.75);stroke-width:2.5}
+#lensHi{position:absolute;left:0;top:0;border:3px solid var(--sky);border-radius:6px;box-shadow:0 0 0 4px rgba(95,154,229,.18)}
+#lensCard{position:absolute;left:0;top:0;overflow:hidden;border-radius:30px;background:#FFF;
+  box-shadow:0 40px 90px rgba(24,32,64,.28),0 0 0 1px rgba(24,32,64,.08),0 0 0 6px rgba(255,255,255,.92)}
+#zFrame{display:block;border:0;width:1280px;height:800px;background:#EEF1F5}
 
 /* captions */
 .cap{position:absolute;direction:rtl;text-align:right;font-weight:700;color:var(--blue);line-height:1.12;letter-spacing:-.5px;white-space:nowrap}
@@ -73,48 +77,64 @@ body{font-family:Heebo,sans-serif;-webkit-font-smoothing:antialiased}
 #spWires{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:visible;pointer-events:none}
 #spWires path{fill:none;stroke:var(--sky);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
 
-/* fly card */
-#flyCard{position:absolute;left:0;top:0;opacity:0;background:#FFF;border:1px solid #CDD6E1;border-radius:14px;box-shadow:0 30px 70px rgba(30,40,72,.25);
-  direction:rtl;padding:12px 14px;color:var(--ink);white-space:pre-wrap;transform-origin:0 0;overflow:hidden}
-#flyCard .output-token{direction:ltr;unicode-bidi:isolate;color:var(--blue);font-weight:700;background:#F0F2FB;border-radius:3px;padding-inline:2px}
+/* save as image + share */
+#dlChip{position:absolute;left:150px;top:438px;width:780px;height:104px;border-radius:26px;background:#FFF;opacity:0;direction:rtl;
+  box-shadow:0 22px 50px rgba(24,32,64,.18),0 0 0 1px rgba(24,32,64,.06);display:flex;align-items:center;gap:22px;padding:0 26px}
+#dlChip .ic{width:60px;height:60px;border-radius:50%;background:#E8F0FC;display:flex;align-items:center;justify-content:center;flex:none}
+#dlChip .ic svg{width:32px;height:32px;fill:none;stroke:var(--blue);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#dlChip .t1{font-size:30px;font-weight:700;color:var(--ink)}
+#dlChip .t2{font-size:22px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:600px}
+#pngCard{position:absolute;left:0;top:0;opacity:0;border-radius:22px;overflow:hidden;box-shadow:0 36px 90px rgba(30,40,72,.32),0 0 0 1px rgba(24,32,64,.08);background:#FFF;transform-origin:50% 50%}
+#pngCard img{display:block;width:100%;height:auto}
+#shareSheet{position:absolute;left:60px;top:1300px;width:960px;height:300px;border-radius:32px;background:#FFF;opacity:0;direction:rtl;
+  box-shadow:0 30px 70px rgba(24,32,64,.2),0 0 0 1px rgba(24,32,64,.06);padding:30px 40px}
+#shareSheet .sh-title{font-size:32px;font-weight:700;color:var(--blue);margin-bottom:26px}
+#shareSheet .sh-row{display:flex;justify-content:space-between}
+.sh-t{width:190px;display:flex;flex-direction:column;align-items:center;gap:14px;font-size:24px;font-weight:600;color:var(--ink)}
+.sh-t .ic{width:104px;height:104px;border-radius:30px;background:#EEF2FB;display:flex;align-items:center;justify-content:center}
+.sh-t .ic svg{width:52px;height:52px;fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#sentPill{position:absolute;left:390px;top:1640px;width:300px;height:84px;border-radius:42px;background:var(--success);color:#FFF;opacity:0;
+  display:flex;align-items:center;justify-content:center;gap:12px;font-size:32px;font-weight:700;direction:rtl;box-shadow:0 16px 36px rgba(36,123,85,.32)}
+#sentPill svg{width:34px;height:34px;fill:none;stroke:#FFF;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 
-/* touch */
+/* pointer + touch */
+#cursor{position:absolute;left:0;top:0;width:58px;height:68px;opacity:0;transform-origin:5px 5px;filter:drop-shadow(0 8px 12px rgba(20,25,50,.3))}
 #clickRing{position:absolute;left:0;top:0;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:6px solid var(--orange);opacity:0}
+#skyRing{position:absolute;left:0;top:0;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:6px solid var(--sky);opacity:0}
 #tapDot{position:absolute;left:0;top:0;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;background:rgba(95,154,229,.35);border:4px solid rgba(95,154,229,.9);opacity:0}
 
 #checkBadge{position:absolute;width:84px;height:84px;border-radius:50%;background:var(--success);opacity:0;box-shadow:0 12px 30px rgba(36,123,85,.35);
   display:flex;align-items:center;justify-content:center}
 #checkBadge svg{width:50px;height:50px;fill:none;stroke:#FFF;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
-#copyBurst{position:absolute;width:10px;height:10px;border-radius:50%;border:5px solid var(--orange);opacity:0}
-#pngCard{position:absolute;left:0;top:0;opacity:0;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(30,40,72,.3);background:#FFF;transform-origin:50% 50%}
-#pngCard img{display:block;width:100%;height:auto}
+#copyBurst{position:absolute;width:10px;height:10px;border-radius:14px;border:5px solid var(--orange);opacity:0}
 
 /* end card */
-#endcard{background:var(--blue);opacity:0}
+#endWipe{background:var(--blue);clip-path:circle(0px at 540px 1170px)}
+#endcard{opacity:0}
 #endWords{position:absolute;left:0;right:0;top:470px;text-align:center;font-size:156px;line-height:1.16;font-weight:700;color:#FFF;direction:rtl;white-space:nowrap}
 #endWords .w{display:block;opacity:0}
 #endLogo{position:absolute;left:50%;top:1150px;width:400px;margin-left:-200px;opacity:0}
 #endLine{position:absolute;left:0;right:0;top:1480px;text-align:center;font-size:54px;font-weight:500;color:rgba(255,255,255,.88);direction:rtl;opacity:0}
 
-#flash{background:#FFF;opacity:0;pointer-events:none}
-#veil{background:#E6E8EC;z-index:100}
+#veil{background:#E9ECF1;z-index:100}
 </style>
 </head>
 <body>
 <div id="stage">
   <div id="bg" class="layer"></div>
-  <div id="bgApp" class="layer"></div>
 
-  <div id="rig" class="layer">
-    <div id="laptopBase"></div>
-    <div id="deviceChrome"></div>
-    <div id="appLayer" class="layer">
-      <div id="appCard"><div id="appWrap"><iframe id="appFrame" title="SMS Studio"></iframe></div></div>
-    </div>
-    <div id="deviceNotch"></div>
+  <div id="devLayer" class="layer"><div id="devD" class="layer">
+    <div id="dNeck"></div><div id="dFoot"></div><div id="dBase"></div>
+    <div id="dBody"></div>
+    <div id="dScreen"><div id="dWrap"><iframe id="dFrame" title="SMS Studio — desktop"></iframe></div></div>
+    <div id="dNotch"></div>
+  </div></div>
+
+  <div id="lensLayer" class="layer">
+    <svg id="lensCone"><polygon id="lensPoly" points="0,0 0,0 0,0 0,0"/><line id="lensL1"/><line id="lensL2"/></svg>
+    <div id="lensHi"></div>
+    <div id="lensCard"><div id="zWrap"><iframe id="zFrame" title="SMS Studio — magnified"></iframe></div></div>
   </div>
-
-  <div id="legacyLayer" class="layer"><div id="legacy"></div></div>
 
   <div id="split" class="layer">
     <div class="sp-card" id="spTop">
@@ -129,20 +149,35 @@ body{font-family:Heebo,sans-serif;-webkit-font-smoothing:antialiased}
     <div id="spMarks"></div>
   </div>
 
-  <div id="flyCard"></div>
+  <div id="dlChip">
+    <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg></span>
+    <div><div class="t1">התמונה נשמרה</div><div class="t2"><bdi id="dlName" dir="ltr"></bdi></div></div>
+  </div>
+  <div id="pngCard"><img id="pngImg" alt=""></div>
+  <div id="shareSheet">
+    <div class="sh-title">שיתוף</div>
+    <div class="sh-row">
+      <div class="sh-t" id="shMail"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span>דוא״ל</div>
+      <div class="sh-t" id="shChat"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></span>צ׳אט</div>
+      <div class="sh-t" id="shTeam"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="16.5" cy="10" r="2.4"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M14.5 15.3c2.6-.3 4.8 1 5.4 3.7"/></svg></span>קבוצה</div>
+      <div class="sh-t" id="shFolder"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg></span>תיקייה</div>
+    </div>
+  </div>
+  <div id="sentPill"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg>נשלח</div>
+
   <div id="checkBadge"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
   <div id="copyBurst"></div>
-  <div id="pngCard"><img id="pngImg" alt=""></div>
 
   <div id="wipe" class="layer"></div>
   <div id="logoLayer" class="layer">
     <div id="headerBlue"></div>
     <img id="logoImg" alt="">
-    <div id="logoTitle">עורך מסרונים</div>
   </div>
+  <div id="logoTitle">עורך מסרונים</div>
 
   <div id="captions" class="layer"></div>
 
+  <div id="endWipe" class="layer"></div>
   <div id="endcard" class="layer">
     <div id="endWords"><span class="w">לנסח.</span><span class="w">לראות.</span><span class="w">להעתיק.</span></div>
     <img id="endLogo" alt="">
@@ -150,9 +185,10 @@ body{font-family:Heebo,sans-serif;-webkit-font-smoothing:antialiased}
   </div>
 
   <div id="clickRing"></div>
+  <div id="skyRing"></div>
   <div id="tapDot"></div>
+  <svg id="cursor" viewBox="0 0 44 52"><path d="M4 4 L4 40 L13.5 31 L20 46 L27 43 L20.5 28.5 L34 28.5 Z" fill="#FFFFFF" stroke="#1D2240" stroke-width="2.6" stroke-linejoin="round"/></svg>
 
-  <div id="flash" class="layer"></div>
   <div id="veil" class="layer"></div>
 </div>
 
@@ -161,7 +197,6 @@ body{font-family:Heebo,sans-serif;-webkit-font-smoothing:antialiased}
 <script src="seed.js"></script>
 <script src="kit.js"></script>
 <script src="bridge.js"></script>
-<script src="legacy-scene.js"></script>
 <script src="timeline-9x16.js"></script>
 </body>
 </html>

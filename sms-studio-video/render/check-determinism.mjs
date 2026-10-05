@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 import { openStage } from './stage-browser.mjs';
 
-const times = [0, 4, 8.6, 10, 15, 24, 32, 37.5, 39, 44.9, 46, 48.8, 51, 54];
+const times = process.env.FORMAT === "9x16" ? [0, 3.9, 6, 10.9, 12.5, 18, 20, 26, 30, 33.8, 35.3, 39.5, 41.8, 44, 47.3, 49.4, 50.6, 52, 54] : [0, 4, 8.6, 10, 15, 24, 32, 37.5, 39, 44.9, 46, 48.8, 51, 54];
 const stage = await openStage({ port: 4179, format: process.env.FORMAT });
 const hash = (b) => createHash('md5').update(b).digest('hex');
 async function pass(order) {

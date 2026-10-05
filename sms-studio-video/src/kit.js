@@ -84,9 +84,9 @@
     return { N, ease, lastKeyAt };
   };
 
-  /* ---------- sync: proxies -> stage + real app ---------- */
-  K.makeSync = function ({ B, S, stageW, stageH, text, typing, encoded, panels = [], halos = [], els }) {
-    const { appWrap, chrome, base, notch, rig, card } = els;
+  /* ---------- app state: one proxy object -> one real app instance ---------- */
+  K.TOASTS = ['ההעתקה הושלמה', 'התמונה הועתקה'];
+  K.makeAppSync = function ({ B, text, typing, panels = [], halos = [] }) {
     const haloEls = {};
     function placeHalo(name, sel, p) {
       let d = haloEls[name];
@@ -110,11 +110,47 @@
     };
     const views = ['library', 'editor', 'preview'];
 
+    return function appSync(st, t) {
+      B.setSize(st.W, st.H);
+      if (st.scrollY !== undefined) B.setScroll(st.scrollY);
+      // Every layout-changing write first, measurements (caret, halos) last.
+      for (const [sel, key, dx, dy] of panels) buildCss(B.$(sel), st[key], dx, dy);
+      const bub = B.$('#smsPreview');
+      if (st.bub >= 1) { bub.style.opacity = ''; bub.style.transform = ''; }
+      else {
+        const e = Math.max(0, st.bub);
+        bub.style.opacity = String(Math.min(1, e * 1.6));
+        bub.style.transformOrigin = '100% 100%';
+        bub.style.transform = `translateY(${(18 * (1 - e)).toFixed(2)}px) scale(${(0.86 + 0.14 * e).toFixed(4)})`;
+      }
+      B.setView(views[Math.round(st.view)]);
+      B.setDrawer(st.drawer);
+      B.setActiveTag(st.tag > 0.5 ? 'נוכחות' : null);
+      B.setCopied(st.copied > 1.5 ? 'icon' : st.copied > 0.5 ? 'full' : false);
+      B.setToast(st.toast, K.TOASTS[Math.round(st.toastMsg || 0)]);
+      const k = Math.min(typing.N, Math.floor(st.chars + 1e-6));
+      B.setText(text.slice(0, k));
+      B.setFocus(st.focus > 0.5);
+      let caretOp = 0;
+      if (st.caret > 0.5) {
+        const since = t - typing.lastKeyAt(k);
+        caretOp = since < 0.5 ? 1 : (Math.floor((since - 0.5) / 0.53) % 2 === 0 ? 0 : 1);
+      }
+      B.setCaret(caretOp);
+      for (const [name, sel, key] of halos) placeHalo(name, sel, st[key]);
+    };
+  };
+
+  /* ---------- sync: proxies -> stage + real app (single-instance stages) ---------- */
+  K.makeSync = function ({ B, S, stageW, stageH, text, typing, encoded, panels = [], halos = [], els }) {
+    const { appWrap, chrome, base, notch, rig, card } = els;
+    const appSync = K.makeAppSync({ B, text, typing, panels, halos });
+
     return function sync(t) {
       const { P, cam, dev } = S;
 
-      // Old system
-      if (parseFloat(gsap.getProperty('#legacyLayer', 'opacity')) > 0) {
+      // Old system (16:9 only)
+      if (window.Legacy && document.getElementById('legacyLayer') && parseFloat(gsap.getProperty('#legacyLayer', 'opacity')) > 0) {
         if (P.legacyMode < 0.5) { Legacy.resetPaste(); Legacy.renderTyping(P.legacyT); }
         else Legacy.renderPaste(encoded, P.pasteText, P.pasteLines);
         Legacy.setClock(P.clockMin, P.clockSec);
@@ -123,7 +159,6 @@
       // Viewport size of the real app — its media queries respond for real.
       B.setSize(P.W, P.H);
       if (P.scrollY !== undefined) B.setScroll(P.scrollY);
-
       // The camera maps app point (cx,cy) to the centre of the frame: the app card when it
       // is on (9:16), otherwise the whole stage.
       const cardOn = card && P.cardOn > 0.5 && P.devMode < 0.5;
@@ -168,37 +203,14 @@
       const blur = P.rigBlur + 7 * P.pulse;
       rig.style.filter = blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : '';
 
-      // App state — every layout-changing write first, measurements (caret, halos) last.
-      for (const [sel, key, dx, dy] of panels) buildCss(B.$(sel), P[key], dx, dy);
-      const bub = B.$('#smsPreview');
-      if (P.bub >= 1) { bub.style.opacity = ''; bub.style.transform = ''; }
-      else {
-        const e = Math.max(0, P.bub);
-        bub.style.opacity = String(Math.min(1, e * 1.6));
-        bub.style.transformOrigin = '100% 100%';
-        bub.style.transform = `translateY(${(18 * (1 - e)).toFixed(2)}px) scale(${(0.86 + 0.14 * e).toFixed(4)})`;
-      }
-      B.setView(views[Math.round(P.view)]);
-      B.setDrawer(P.drawer);
-      B.setActiveTag(P.tag > 0.5 ? 'נוכחות' : null);
-      B.setCopied(P.copied > 1.5 ? 'icon' : P.copied > 0.5 ? 'full' : false);
-      B.setToast(P.toast, 'ההעתקה הושלמה');
-      const k = Math.min(typing.N, Math.floor(P.chars + 1e-6));
-      B.setText(text.slice(0, k));
-      B.setFocus(P.focus > 0.5);
-      let caretOp = 0;
-      if (P.caret > 0.5) {
-        const since = t - typing.lastKeyAt(k);
-        caretOp = since < 0.5 ? 1 : (Math.floor((since - 0.5) / 0.53) % 2 === 0 ? 0 : 1);
-      }
-      B.setCaret(caretOp);
-      for (const [name, sel, key] of halos) placeHalo(name, sel, P[key]);
+      appSync(P, t);
     };
   };
 
   /* ---------- forward-only seek ---------- */
   K.installSeek = function ({ stageEl, build, sync, duration, fps, scenes, debug }) {
-    const SNAP = [stageEl, ...stageEl.querySelectorAll('*')].map(el => [el, el.getAttribute('style')]);
+    // Iframe sizes are owned by the bridges (setSize caches them), so they stay out of the snapshot.
+    const SNAP = [stageEl, ...stageEl.querySelectorAll('*')].filter(el => el.tagName !== 'IFRAME').map(el => [el, el.getAttribute('style')]);
     function restore() {
       for (const [el, st] of SNAP) {
         if (st === null) el.removeAttribute('style'); else el.setAttribute('style', st);

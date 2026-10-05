@@ -3,11 +3,14 @@
    values, dispatch `input`, and call the app's own functions (setView, showToast,
    openHistory, renderTagFilters, makePng, encodeSms...). */
 (function () {
-  const B = {};
   const FONT_WEIGHTS = [400, 500, 600, 700];
   const FONT_SAMPLE = 'אבגדהוזחטיכלמנסעפצקרשת abcdefghijklmnopqrstuvwxyz 0123456789 #\\.,:"';
 
   const raf = (win) => new Promise(r => win.requestAnimationFrame(() => r()));
+
+  /* One bridge per iframe: AppBridge is the default instance, AppBridge.create() makes more. */
+  function create() {
+  const B = {};
 
   B.load = async function (iframe, src) {
     window.seedLocalStorage();
@@ -169,6 +172,7 @@
 
   B.setToast = function (p, msg) {
     const el = B.toastEl;
+    if (B._last.toastMsg !== undefined && B._last.toastMsg !== msg && p > 0) B._last.toast = 0;
     if (p <= 0) {
       if (B._last.toast !== 0) { el.classList.remove('show'); el.style.opacity = ''; el.style.transform = ''; }
       B._last.toast = 0;
@@ -219,7 +223,9 @@
 
   /* Page scroll of the app document (the mobile layout scrolls the whole page). */
   B.setScroll = function (y) {
-    B.doc.scrollingElement.scrollTop = Math.round(y);   // every frame, for the same reason
+    const se = B.doc.scrollingElement;                  // every frame, for the same reason
+    se.scrollTop = Math.round(y);
+    se.scrollLeft = 0;
   };
 
   /* Inline style on a real app element (used for build-in and emphasis moves). */
@@ -229,5 +235,10 @@
     for (const k in css) el.style[k] = css[k];
   };
 
-  window.AppBridge = B;
+  return B;
+  }
+
+  const AppBridge = create();
+  AppBridge.create = create;
+  window.AppBridge = AppBridge;
 })();
