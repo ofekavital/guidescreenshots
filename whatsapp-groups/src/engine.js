@@ -528,15 +528,14 @@
       const a = t * (0.35 + i * 0.12) + i * 2.1;
       b.style.transform = `translate(${Math.cos(a) * 140}px, ${Math.sin(a * 1.3) * 90}px)`;
     });
-    doodles.style.backgroundPosition = `${-t * 6}px ${-t * 9}px`;
 
     const lay = computeLayout(t);
     const { nEff } = lay.pop();
     const zoom = zoomFor(nEff);
     world.style.transform = zoom === 1 ? 'none' : `scale(${zoom})`;
-    // הצמדה לרשת הפיקסלים של המסך, כדי שטקסט בתנועה איטית לא "ירצד" בין פריימים
-    const dpr = window.devicePixelRatio || 1;
-    const snap = (v) => (zoom === 1 ? Math.round(v * dpr) / dpr : v);
+    // כל טלפון הוא שכבה נפרדת (will-change), שזזה בתת־פיקסלים בלי "קפיצות" של הצמדה לפיקסל.
+    // במנוחה המיקומים שלמים (המרכוז מחושב כך), כך שהטקסט חד.
+    const snap = (v) => (Math.abs(v - Math.round(v)) < 0.002 ? Math.round(v) : v);
 
     const clockStr = clockAt(t);
     const shown = new Set();

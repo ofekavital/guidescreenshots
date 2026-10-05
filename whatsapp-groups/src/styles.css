@@ -99,6 +99,7 @@ body {
   top: 0;
   left: 0;
   transform-origin: 50% 60%;
+  will-change: transform;
 }
 
 .device {
