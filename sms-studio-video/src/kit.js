@@ -181,7 +181,7 @@
       B.setView(views[Math.round(P.view)]);
       B.setDrawer(P.drawer);
       B.setActiveTag(P.tag > 0.5 ? 'נוכחות' : null);
-      B.setCopied(P.copied > 0.5);
+      B.setCopied(P.copied > 1.5 ? 'icon' : P.copied > 0.5 ? 'full' : false);
       B.setToast(P.toast, 'ההעתקה הושלמה');
       const k = Math.min(typing.N, Math.floor(P.chars + 1e-6));
       B.setText(text.slice(0, k));

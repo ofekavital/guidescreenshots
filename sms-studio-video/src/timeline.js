@@ -304,6 +304,7 @@
 
     // The real app's phone, isolated with a clip, receives the message.
     camSet(camPhone, 38.7);
+    set({ bub: 0 }, 38.7);                     // the bubble arrives only after the phone is in
     set({ clipOn: 1, clipT: M.phone.y, clipR: SW - (M.phone.x + M.phone.w), clipB: SH - (M.phone.y + M.phone.h), clipL: M.phone.x, clipRad: M.phoneRadius }, 38.7);
     ft('#appLayer', { opacity: 0, y: 60, scale: 1, filter: 'blur(0px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.7 }, 38.85);
     tw({ bub: 0 }, { bub: 1 }, 39.35, 0.55);

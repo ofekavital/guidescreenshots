@@ -64,6 +64,7 @@
     B.copyBtnOriginal = B.copyBtn.innerHTML;
     // Same markup the app's own click handler swaps in.
     B.copyBtnCopied = '<svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>הועתק';
+    B.copyBtnCopiedIcon = '<svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg>';
     B.toastEl = doc.getElementById('toast');
     B.logoSrc = doc.querySelector('.brand img').getAttribute('src');
 
@@ -127,12 +128,15 @@
 
   /* ---------- state application (idempotent) ---------- */
   B.setText = function (text) {
-    if (B._last.text === text) return;
-    B._last.text = text;
     const ta = B.ta;
-    ta.value = text;
-    ta.dispatchEvent(new B.win.Event('input', { bubbles: true }));
-    if (!text) { B.state.dirty = false; B.win.eval('updateSaveButton()'); }
+    if (B._last.text !== text) {
+      B._last.text = text;
+      ta.value = text;
+      ta.dispatchEvent(new B.win.Event('input', { bubbles: true }));
+      if (!text) { B.state.dirty = false; B.win.eval('updateSaveButton()'); }
+    }
+    // Re-asserted every frame: after a viewport resize the browser clamps scroll offsets
+    // differently depending on history, so the caret line must be pinned explicitly.
     ta.scrollTop = ta.scrollHeight;
   };
 
@@ -154,10 +158,13 @@
     c.style.opacity = visible ? String(opacity) : '0';
   };
 
-  B.setCopied = function (on) {
-    if (B._last.copied === on) return;
-    B._last.copied = on;
-    B.copyBtn.innerHTML = on ? B.copyBtnCopied : B.copyBtnOriginal;
+  /* mode: false | 'full' (the app's own check + "הועתק") | 'icon' (check only — the mobile
+     layout's icon button is too narrow for the label and clips it). */
+  B.setCopied = function (mode) {
+    if (mode === true) mode = 'full';
+    if (B._last.copied === mode) return;
+    B._last.copied = mode;
+    B.copyBtn.innerHTML = mode === 'full' ? B.copyBtnCopied : mode === 'icon' ? B.copyBtnCopiedIcon : B.copyBtnOriginal;
   };
 
   B.setToast = function (p, msg) {
@@ -212,10 +219,7 @@
 
   /* Page scroll of the app document (the mobile layout scrolls the whole page). */
   B.setScroll = function (y) {
-    y = Math.round(y);
-    if (B._last.scroll === y) return;
-    B._last.scroll = y;
-    B.doc.scrollingElement.scrollTop = y;
+    B.doc.scrollingElement.scrollTop = Math.round(y);   // every frame, for the same reason
   };
 
   /* Inline style on a real app element (used for build-in and emphasis moves). */

@@ -2,16 +2,18 @@
 // frame, then ffmpeg encodes H.264 / yuv420p / CRF 18 at 30fps.
 //
 //   node render/render.mjs                 -> out/sms-studio-16x9.mp4
+//   FORMAT=9x16 node render/render.mjs     -> out/sms-studio-9x16.mp4
 //   FRAMES=0-90 node render/render.mjs     -> render only a frame range (no encode)
 //   KEEP_FRAMES=1 node render/render.mjs   -> keep out/frames after encoding
 import { mkdir, rm } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { openStage } from './stage-browser.mjs';
 
-const OUT = 'out/sms-studio-16x9.mp4';
-const FRAMES_DIR = 'out/frames';
+const format = process.env.FORMAT || '16x9';
+const OUT = `out/sms-studio-${format}.mp4`;
+const FRAMES_DIR = `out/frames-${format}`;
 
-const stage = await openStage({ port: Number(process.env.PORT) || 4173 });
+const stage = await openStage({ port: Number(process.env.PORT) || 4173, format });
 const { duration, fps } = stage.info;
 const total = Math.round(duration * fps);
 let [first, last] = [0, total - 1];

@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { openStage } from './stage-browser.mjs';
 
 const times = [0, 4, 8.6, 10, 15, 24, 32, 37.5, 39, 44.9, 46, 48.8, 51, 54];
-const stage = await openStage({ port: 4179 });
+const stage = await openStage({ port: 4179, format: process.env.FORMAT });
 const hash = (b) => createHash('md5').update(b).digest('hex');
 async function pass(order) {
   const out = {};
