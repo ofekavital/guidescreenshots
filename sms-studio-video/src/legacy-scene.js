@@ -48,9 +48,33 @@
     box-shadow:0 14px 30px rgba(40,40,40,.22),0 0 0 6px #D9D9D9;direction:ltr}
   .lg-clock svg{width:100%;height:100%;display:block}
   .lg-clock-time{position:absolute;left:100%;top:50%;margin:-20px 0 0 26px;font:700 34px Arimo,Arial,sans-serif;color:#5A5A5A;letter-spacing:1px;white-space:nowrap}
+
+  /* 9:16 — one column: text box above, display below; bigger type for phones. */
+  #legacy.portrait .lg-win{left:60px;top:520px;width:960px;height:1330px}
+  #legacy.portrait .lg-title{height:46px;font-size:22px}
+  #legacy.portrait .lg-title .lg-btns i{width:20px;height:20px}
+  #legacy.portrait .lg-menu{height:36px;font-size:19px;gap:26px}
+  #legacy.portrait .lg-tools{height:62px;gap:10px}
+  #legacy.portrait .lg-b{height:42px;font-size:20px;padding:0 20px}
+  #legacy.portrait .lg-body{flex-direction:column;gap:14px;padding:18px;height:calc(100% - 46px - 36px - 62px - 38px)}
+  #legacy.portrait .lg-form{width:auto;flex:none}
+  #legacy.portrait .lg-label{font-size:20px}
+  #legacy.portrait .lg-row .lg-label{width:92px}
+  #legacy.portrait .lg-input{height:44px;font-size:21px}
+  #legacy.portrait .lg-ta{flex:none;height:316px;font-size:28px;line-height:44px;padding:12px 16px}
+  #legacy.portrait .lg-caret{height:32px;vertical-align:-7px}
+  #legacy.portrait .lg-meta{font-size:19px}
+  #legacy.portrait .lg-count{font-size:20px}
+  #legacy.portrait .lg-line{font-size:26px;line-height:40px;height:40px}
+  #legacy.portrait .lg-line.extra::after{font-size:17px}
+  #legacy.portrait .lg-status{height:38px;font-size:18px}
+  #legacy.portrait .lg-clock{left:70px;top:150px;width:128px;height:128px}
+  #legacy.portrait .lg-clock-time{left:0;right:0;top:100%;margin:18px 0 0;text-align:center;font-size:36px}
   `;
 
-  L.build = function (root) {
+  L.build = function (root, { portrait = false } = {}) {
+    L.lineH = portrait ? 40 : 30;
+    root.classList.toggle('portrait', portrait);
     const st = document.createElement('style');
     st.textContent = CSS;
     document.head.appendChild(st);
@@ -186,7 +210,7 @@
     rawLines.forEach((line, i) => {
       if (i > 0) {
         const age = t - births[i - 1];
-        const h = 30 * backOut(age / 0.32);
+        const h = L.lineH * backOut(age / 0.32);
         const flash = Math.max(0, 1 - age / 0.7);
         html += `<div class="lg-line extra" style="height:${h.toFixed(2)}px;background:rgba(183,58,53,${(0.10 + 0.32 * flash).toFixed(3)})"></div>`;
         total++;

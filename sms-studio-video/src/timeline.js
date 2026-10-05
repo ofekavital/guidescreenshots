@@ -8,9 +8,7 @@
    through the proxy objects (P, cam, dev), which sync() applies after every seek. */
 (async function () {
   const $ = (id) => document.getElementById(id);
-  gsap.registerPlugin(CustomEase);
-  gsap.config({ force3D: false });          // 2D transforms only: no GPU layers with stale raster scale
-  const BRAND = CustomEase.create('brand', 'M0,0 C0.2,0.75 0.2,1 1,1');
+  const BRAND = Kit.initGsap();
   const CAM = 'sine.inOut';
   const FPS = 30;
   const DURATION = 55.5;
@@ -64,27 +62,7 @@
   /* ---------- helpers ---------- */
   const toStage = (r, c) => ({ x: 960 + (r.x - c.cx) * c.s, y: 540 + (r.y - c.cy) * c.s, w: r.w * c.s, h: r.h * c.s,
     cx: 960 + (r.cx - c.cx) * c.s, cy: 540 + (r.cy - c.cy) * c.s });
-  function caption(lines, { x = 1830, y, size = 88, white = false, center = false, pill = false }) {
-    const el = document.createElement('div');
-    el.className = 'cap' + (white ? ' white' : '') + (center ? ' center' : '') + (pill ? ' pill' : '');
-    el.style.fontSize = size + 'px';
-    if (center) { el.style.left = '0'; el.style.right = '0'; } else el.style.right = (SW - x) + 'px';
-    el.style.top = y + 'px';
-    el.innerHTML = lines.map(l => `<span class="ln">${l.split(' ').map(w => `<span class="w">${w}</span>`).join(' ')}</span>`).join('');
-    $('captions').appendChild(el);
-    return el;
-  }
-  // Time at which an eased tween crosses a value (centres the breakpoint pulses).
-  function crossTime(start, dur, from, to, value, ease) {
-    const e = gsap.parseEase(ease);
-    let lo = 0, hi = 1;
-    for (let i = 0; i < 40; i++) {
-      const mid = (lo + hi) / 2;
-      if ((from + (to - from) * e(mid) - value) * (to - from) < 0) lo = mid; else hi = mid;
-    }
-    return start + dur * (lo + hi) / 2;
-  }
-  function rng(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const caption = (lines, o) => Kit.caption($('captions'), SW, lines, { x: 1830, ...o });
 
   /* ---------- captions ---------- */
   const CAP = {
@@ -102,25 +80,7 @@
 
   /* ---------- typing schedule (app) ---------- */
   const TYPE_START = 18.9, TYPE_DUR = 7.8;
-  const keyTimes = (() => {
-    const r = rng(21), out = []; let t = 0;
-    for (let i = 0; i < N; i++) {
-      const ch = DEMO[i], prev = DEMO[i - 1] || '';
-      let d = 1;
-      if (ch === ' ') d = 1.45;
-      if (ch === '\n') d = prev === '\n' ? 1.8 : 3.2;
-      if (/[.,:]/.test(prev)) d += 1.1;
-      d *= (0.72 + r() * 0.56) * (1 + 0.22 * Math.sin(i / 7.5));
-      t += d; out.push(t);
-    }
-    return out.map(v => v / t);               // normalised 0..1: char i lands at out[i]
-  })();
-  const typingEase = (p) => {                 // fraction of keys pressed by progress p
-    let lo = 0, hi = N;
-    while (lo < hi) { const m = (lo + hi) >> 1; if (keyTimes[m] <= p) lo = m + 1; else hi = m; }
-    return lo / N;
-  };
-  const lastKeyAt = (k) => (k <= 0 ? TYPE_START - 0.3 : TYPE_START + keyTimes[k - 1] * TYPE_DUR);
+  const TY = Kit.typing(DEMO, TYPE_START, TYPE_DUR);
 
   /* ---------- scene 3: logo + title ---------- */
   const logo = $('logoImg'), title = $('logoTitle');
@@ -217,29 +177,17 @@
   };
   const CAM0 = { cx: 960, cy: 540, s: 1 };
   const DEV0 = { on: 0, bezel: 14, radius: 10, base: 1, notch: 0 };
-  let P, cam, dev, tl;
+  const S = {};                               // current proxies (fresh on every rebuild)
 
   function build() {
-    P = { ...P0 }; cam = { ...CAM0 }; dev = { ...DEV0 };
-    tl = gsap.timeline({ paused: true, defaults: { ease: BRAND, lazy: false } });
+    const P = S.P = { ...P0 }, cam = S.cam = { ...CAM0 }, dev = S.dev = { ...DEV0 };
+    const tl = gsap.timeline({ paused: true, defaults: { ease: BRAND, lazy: false } });
+    const { ft, capIn, capOut } = Kit.tweens(tl, BRAND);
 
     const set = (vals, at) => tl.set(P, vals, at);
     const tw = (from, to, at, dur, ease = BRAND) => tl.fromTo(P, from, { ...to, duration: dur, ease, immediateRender: false }, at);
     const camSet = (to, at) => tl.set(cam, to, at);
     const camTw = (from, to, at, dur, ease = CAM) => tl.fromTo(cam, from, { ...to, duration: dur, ease, immediateRender: false }, at);
-    const ft = (target, from, to, at) => tl.fromTo(target, from, { immediateRender: false, ...to }, at);
-    function capIn(el, at, { stagger = 0.11, times } = {}) {
-      const pill = el.classList.contains('pill');
-      if (pill) ft(el.querySelectorAll('.ln'), { opacity: 0, scale: 0.9, y: 18 }, { opacity: 1, scale: 1, y: 0, duration: 0.55 }, at);
-      el.querySelectorAll('.w').forEach((w, i) => ft(w, { opacity: 0, y: 20, filter: 'blur(6px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.62 }, times ? times[i] : at + (pill ? 0.1 : 0) + i * stagger));
-    }
-    function capOut(el, at) {
-      if (el.classList.contains('pill')) ft(el.querySelectorAll('.ln'), { opacity: 1, y: 0 }, { opacity: 0, y: -10, duration: 0.3, ease: 'power2.in' }, at + 0.05);
-      ft(el.querySelectorAll('.w'), { opacity: 1, y: 0, filter: 'blur(0px)' },
-        { opacity: 0, y: -14, filter: 'blur(5px)', duration: 0.3, ease: 'power2.in', stagger: 0.03 }, at);
-    }
-
     /* ---------------- SCENE 1 — the pain (0–8) ---------------- */
     tl.fromTo('#legacyLayer', { opacity: 1, scale: 1.035 }, { scale: 1, duration: 1.4, ease: 'power2.out', immediateRender: true }, 0);
     tw({ legacyT: 0 }, { legacyT: 8 }, 0, 8, 'none');
@@ -292,7 +240,7 @@
     camTw(camB, camC, 22.65, 1.5);
     camTw(camC, camC2, 24.15, 3.7, 'none');
     set({ focus: 1, caret: 1 }, 18.55);
-    tw({ chars: 0 }, { chars: N }, TYPE_START, TYPE_DUR, typingEase);
+    tw({ chars: 0 }, { chars: N }, TYPE_START, TYPE_DUR, TY.ease);
     tw({ hSave: 0 }, { hSave: 1 }, TYPE_START + 0.1, 0.9, 'power1.out');
     capIn(CAP.c4a, 20.0);
     capOut(CAP.c4a, 22.5);
@@ -378,7 +326,7 @@
     const T1 = 44.5, T1D = 1.1;
     tw({ W: 1440, H: 900, devK: 0.615, devX: -110, devY: -36 }, { W: 1024, H: 768, devK: 0.76, devX: -130, devY: -6 }, T1, T1D, MORPH_EASE);
     tl.fromTo(dev, { bezel: 14, radius: 10, base: 1 }, { bezel: 20, radius: 26, base: 0, duration: T1D, ease: MORPH_EASE, immediateRender: false }, T1);
-    const x1 = crossTime(T1, T1D, 1440, 1024, 1199.5, MORPH_EASE);
+    const x1 = Kit.crossTime(T1, T1D, 1440, 1024, 1199.5, MORPH_EASE);
     tw({ pulse: 0 }, { pulse: 1 }, x1 - 0.16, 0.16, 'power2.in');
     tw({ pulse: 1 }, { pulse: 0 }, x1, 0.28, 'power2.out');
     capIn(CAP.cT, 45.35);
@@ -387,7 +335,7 @@
     const T2 = 46.75, T2D = 1.1;
     tw({ W: 1024, H: 768, devK: 0.76, devX: -130, devY: -6 }, { W: 390, H: 844, devK: 0.92, devX: -150, devY: 0 }, T2, T2D, MORPH_EASE);
     tl.fromTo(dev, { bezel: 20, radius: 26, notch: 0 }, { bezel: 13, radius: 46, notch: 1, duration: T2D, ease: MORPH_EASE, immediateRender: false }, T2);
-    const x2 = crossTime(T2, T2D, 1024, 390, 899.5, MORPH_EASE);
+    const x2 = Kit.crossTime(T2, T2D, 1024, 390, 899.5, MORPH_EASE);
     tw({ pulse: 0 }, { pulse: 1 }, x2 - 0.16, 0.16, 'power2.in');
     tw({ pulse: 1 }, { pulse: 0 }, x2, 0.3, 'power2.out');
     capIn(CAP.cP, 47.6);
@@ -423,149 +371,30 @@
     ft('#endLogo', { opacity: 0, scale: 0.92, y: 16, filter: 'blur(6px)' }, { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', duration: 0.7 }, E0 + 1.55);
     ft('#endLine', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, E0 + 2.05);
     tl.set({}, {}, DURATION);                  // pad to the full duration
+    return tl;
   }
 
   /* =====================================================================
-     SYNC: apply proxy state to the stage and the real app.
+     SYNC + SEEK (shared engine in kit.js)
      ===================================================================== */
-  const appWrap = $('appWrap'), chrome = $('deviceChrome'), base = $('laptopBase'), notch = $('deviceNotch'), rig = $('rig');
-  const halos = {};
-  function placeHalo(name, sel, p) {
-    let d = halos[name];
-    if (!d) {
-      d = halos[name] = B.doc.createElement('div');
-      d.style.cssText = 'position:fixed;z-index:2147482000;pointer-events:none;border-radius:10px;opacity:0';
-      B.doc.body.appendChild(d);
-    }
-    if (p <= 0 || p >= 1) { d.style.opacity = '0'; return; }
-    const r = B.rect(sel);
-    const spread = 2 + 12 * p, a = 0.55 * (1 - p);
-    d.style.left = r.x + 'px'; d.style.top = r.y + 'px'; d.style.width = r.w + 'px'; d.style.height = r.h + 'px';
-    d.style.boxShadow = `0 0 0 ${spread.toFixed(2)}px rgba(95,154,229,${a.toFixed(3)}), 0 0 0 2px rgba(95,154,229,${(1 - p).toFixed(3)})`;
-    d.style.opacity = '1';
-  }
-  const buildCss = (el, p, dx, dy) => {
-    if (p >= 1) { el.style.opacity = ''; el.style.transform = ''; return; }
-    el.style.opacity = String(p);
-    el.style.transform = `translate(${(dx * (1 - p)).toFixed(2)}px, ${(dy * (1 - p)).toFixed(2)}px)`;
-  };
-  const views = ['library', 'editor', 'preview'];
-
-  function sync(t) {
-    // Old system
-    if (parseFloat(gsap.getProperty('#legacyLayer', 'opacity')) > 0) {
-      if (P.legacyMode < 0.5) { Legacy.resetPaste(); Legacy.renderTyping(P.legacyT); }
-      else Legacy.renderPaste(ENC, P.pasteText, P.pasteLines);
-      Legacy.setClock(P.clockMin, P.clockSec);
-    }
-
-    // Viewport size of the real app — its media queries respond for real.
-    B.setSize(P.W, P.H);
-
-    // Camera / device geometry
-    const c = P.devMode > 0.5 ? { cx: P.W / 2 - P.devX / P.devK, cy: P.H / 2 - P.devY / P.devK, s: P.devK } : cam;
-    const s = c.s, tx = 960 - c.cx * s, ty = 540 - c.cy * s;
-    appWrap.style.width = P.W + 'px';
-    appWrap.style.height = P.H + 'px';
-    appWrap.style.transform = `translate(${tx.toFixed(3)}px, ${ty.toFixed(3)}px) scale(${s.toFixed(5)})`;
-    appWrap.style.clipPath = P.clipOn > 0.5 ? `inset(${P.clipT}px ${P.clipR}px ${P.clipB}px ${P.clipL}px round ${P.clipRad}px)` : '';
-    if (dev.on > 0) {
-      const sw = P.W * s, sh = P.H * s, bz = dev.bezel;
-      chrome.style.opacity = String(dev.on);
-      chrome.style.left = (tx - bz) + 'px'; chrome.style.top = (ty - bz) + 'px';
-      chrome.style.width = (sw + 2 * bz) + 'px'; chrome.style.height = (sh + 2 * bz) + 'px';
-      chrome.style.borderRadius = (dev.radius + bz) + 'px';
-      appWrap.style.borderRadius = (dev.radius / s) + 'px';
-      const bw = (sw + 2 * bz) * 1.18;
-      base.style.opacity = String(dev.on * dev.base);
-      base.style.width = bw + 'px';
-      base.style.left = (tx + sw / 2 - bw / 2) + 'px';
-      base.style.top = (ty + sh + bz - 2) + 'px';
-      notch.style.opacity = String(dev.on * dev.notch);
-      notch.style.left = (tx + sw / 2 - 55) + 'px';
-      notch.style.top = (ty - 1) + 'px';
-    } else {
-      chrome.style.opacity = '0'; base.style.opacity = '0'; notch.style.opacity = '0';
-      appWrap.style.borderRadius = '0px';
-    }
-    rig.style.opacity = String(P.rigO);
-    rig.style.transform = `scale(${(P.rigS * (1 - 0.035 * P.pulse)).toFixed(5)})`;
-    const blur = P.rigBlur + 7 * P.pulse;
-    rig.style.filter = blur > 0.01 ? `blur(${blur.toFixed(2)}px)` : '';
-
-    // App state — every layout-changing write first, measurements (caret, halos) last.
-    buildCss(B.$('.context-header'), P.bContext, 0, -18);
-    buildCss(B.$('.library'), P.bLibrary, 70, 0);
-    buildCss(B.$('.editor'), P.bEditor, 0, 46);
-    buildCss(B.$('.preview'), P.bPreview, -70, 0);
-    const bub = B.$('#smsPreview');
-    if (P.bub >= 1) { bub.style.opacity = ''; bub.style.transform = ''; }
-    else {
-      const e = Math.max(0, P.bub);
-      bub.style.opacity = String(Math.min(1, e * 1.6));
-      bub.style.transformOrigin = '100% 100%';
-      bub.style.transform = `translateY(${(18 * (1 - e)).toFixed(2)}px) scale(${(0.86 + 0.14 * e).toFixed(4)})`;
-    }
-    B.setView(views[Math.round(P.view)]);
-    B.setDrawer(P.drawer);
-    B.setActiveTag(P.tag > 0.5 ? 'נוכחות' : null);
-    B.setCopied(P.copied > 0.5);
-    B.setToast(P.toast, 'ההעתקה הושלמה');
-    const k = Math.min(N, Math.floor(P.chars + 1e-6));
-    B.setText(DEMO.slice(0, k));
-    B.setFocus(P.focus > 0.5);
-    let caretOp = 0;
-    if (P.caret > 0.5) {
-      const since = t - lastKeyAt(k);
-      caretOp = since < 0.5 ? 1 : (Math.floor((since - 0.5) / 0.53) % 2 === 0 ? 0 : 1);
-    }
-    B.setCaret(caretOp);
-    placeHalo('save', '#saveBtn', P.hSave);
-    placeHalo('navE', '.mobile-nav button[data-view="editor"]', P.hNavE);
-    placeHalo('navP', '.mobile-nav button[data-view="preview"]', P.hNavP);
-    placeHalo('saveImg', '#saveImageBtn', P.hSaveImg);
-  }
-
-  /* =====================================================================
-     SEEK (forward-only; rebuild on backward jumps)
-     ===================================================================== */
-  const stageEl = $('stage');
-  const SNAP = [stageEl, ...stageEl.querySelectorAll('*')].map(el => [el, el.getAttribute('style')]);
-  function restore() {
-    for (const [el, st] of SNAP) {
-      if (st === null) el.removeAttribute('style'); else el.setAttribute('style', st);
-      delete el._gsap;
-    }
-  }
-  let lastT = -1;
-  window.seek = function (t) {
-    t = Math.max(0, Math.min(DURATION, t));
-    if (!tl || t < lastT) {
-      if (tl) tl.kill();
-      restore();
-      build();
-    }
-    tl.time(t, false);
-    sync(t);
-    lastT = t;
-    return t;
-  };
-  window.DURATION = DURATION;
-  window.FPS = FPS;
-  window.SCENES = [
-    { t: 0, name: '1 · הכאב' }, { t: 8, name: '2 · המפנה' }, { t: 12, name: '3 · החשיפה' },
-    { t: 18, name: '4 · כתיבה' }, { t: 28, name: '5 · הקסם' }, { t: 36, name: '6 · העתקה' },
-    { t: 42, name: '7 · רספונסיביות' }, { t: 50, name: '8 · סיום' }
-  ];
-  window.__debug = { get P() { return P; }, get cam() { return cam; }, M, ENC, B, get tl() { return tl; } };
+  const sync = Kit.makeSync({
+    B, S, stageW: SW, stageH: SH, text: DEMO, typing: TY, encoded: ENC,
+    els: { appWrap: $('appWrap'), chrome: $('deviceChrome'), base: $('laptopBase'), notch: $('deviceNotch'), rig: $('rig') },
+    panels: [['.context-header', 'bContext', 0, -18], ['.library', 'bLibrary', 70, 0], ['.editor', 'bEditor', 0, 46], ['.preview', 'bPreview', -70, 0]],
+    halos: [['save', '#saveBtn', 'hSave'], ['navE', '.mobile-nav button[data-view="editor"]', 'hNavE'],
+      ['navP', '.mobile-nav button[data-view="preview"]', 'hNavP'], ['saveImg', '#saveImageBtn', 'hSaveImg']]
+  });
+  const seekCtl = Kit.installSeek({
+    stageEl: $('stage'), build, sync, duration: DURATION, fps: FPS, scenes: Kit.SCENES,
+    debug: { get P() { return S.P; }, get cam() { return S.cam; }, M, ENC, B }
+  });
 
   // Warm-up: paint a later frame once so frame 0 is rasterized the same way as every other frame.
   window.seek(1);
   await raf(); await raf();
   window.seek(0);
   await raf(); await raf();
-  $('veil').style.display = 'none';
-  SNAP.find(([el]) => el.id === 'veil')[1] = 'display:none';
+  seekCtl.hideVeil($('veil'));
   window.__ready = true;
   window.dispatchEvent(new Event('stage-ready'));
 })().catch(e => { console.error(e); window.__error = String(e && e.stack || e); });

@@ -145,7 +145,7 @@
 
   B.setCaret = function (opacity) {
     const c = B.caretEl;
-    if (opacity <= 0) { c.style.opacity = '0'; return; }
+    if (opacity <= 0 || !B.ta.offsetWidth) { c.style.opacity = '0'; return; }
     const p = B.caretPoint();
     const visible = p.y >= p.clipTop - 2 && p.y + p.h <= p.clipBottom + 2;
     c.style.left = (p.rtl ? p.x - 2.5 : p.x + 0.5) + 'px';
@@ -208,6 +208,14 @@
     B.frame.style.width = w + 'px';
     B.frame.style.height = h + 'px';
     return true;
+  };
+
+  /* Page scroll of the app document (the mobile layout scrolls the whole page). */
+  B.setScroll = function (y) {
+    y = Math.round(y);
+    if (B._last.scroll === y) return;
+    B._last.scroll = y;
+    B.doc.scrollingElement.scrollTop = y;
   };
 
   /* Inline style on a real app element (used for build-in and emphasis moves). */
