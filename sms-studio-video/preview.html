@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMS Studio — תצוגה מקדימה</title>
+<link rel="stylesheet" href="node_modules/@fontsource/heebo/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/heebo/700.css">
+<style>
+  :root{--blue:#2D3396;--ink:#26334A;--bg:#14172A;--panel:#1E2238;--line:#33395A;--sky:#5F9AE5}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:#E8EAF5;font-family:Heebo,sans-serif}
+  body{display:flex;flex-direction:column}
+  #viewport{flex:1;position:relative;overflow:hidden;min-height:0}
+  #frameBox{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:50% 50%;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  #stageFrame{width:1920px;height:1080px;border:0;display:block;background:#E6E8EC}
+  #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;color:#AAB}
+  .bar{background:var(--panel);border-top:1px solid var(--line);padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  button{font:inherit;color:inherit;background:#2A2F4D;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+  button:hover{background:#353B60}
+  button.primary{background:var(--blue);border-color:var(--blue);min-width:92px;font-weight:700}
+  #scrub{flex:1;min-width:200px;accent-color:var(--sky);direction:ltr}
+  #time{font-variant-numeric:tabular-nums;min-width:150px;text-align:center;direction:ltr}
+  .scenes button{font-size:13px}
+  .scenes button.on{border-color:var(--sky);color:#fff;background:#2C3A6E}
+  .hint{font-size:12px;color:#8F96B5}
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="frameBox"><iframe id="stageFrame" src="src/stage.html" title="stage"></iframe></div>
+  <div id="loading">טוען את הבמה…</div>
+</div>
+<div class="bar">
+  <div class="row">
+    <button id="play" class="primary">▶ נגן</button>
+    <button id="back" dir="ltr" title="פריים אחורה (←)">−1f</button>
+    <button id="fwd" dir="ltr" title="פריים קדימה (→)">+1f</button>
+    <input id="scrub" type="range" min="0" max="55.5" step="0.0333333" value="0">
+    <span id="time">0.00 / 0.00</span>
+  </div>
+  <div class="row scenes" id="scenes"></div>
+  <div class="hint">רווח: נגן/השהה · חצים: פריים · Shift+חצים: שנייה. הנגן מריץ את אותו טיימליין שמשמש לרינדור (seek לכל פריים).</div>
+</div>
+<script>
+const frame = document.getElementById('stageFrame');
+const box = document.getElementById('frameBox');
+const vp = document.getElementById('viewport');
+const playBtn = document.getElementById('play');
+const scrub = document.getElementById('scrub');
+const timeEl = document.getElementById('time');
+let W, t = 0, playing = false, lastNow = 0, D = 55.5, FPS = 30;
+
+function fit() {
+  const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080) * 0.98;
+  box.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+
+function show(nt) {
+  t = Math.max(0, Math.min(D, nt));
+  W.seek(t);
+  scrub.value = t;
+  timeEl.textContent = `${t.toFixed(2)} / ${D.toFixed(2)}  (f${Math.round(t * FPS)})`;
+  document.querySelectorAll('#scenes button').forEach((b, i, all) => {
+    const s0 = +b.dataset.t, s1 = i + 1 < all.length ? +all[i + 1].dataset.t : D + 1;
+    b.classList.toggle('on', t >= s0 && t < s1);
+  });
+}
+function loop(now) {
+  if (!playing) return;
+  const dt = Math.min(0.1, (now - lastNow) / 1000);
+  lastNow = now;
+  let nt = t + dt;
+  if (nt >= D) { nt = D; setPlaying(false); }
+  show(nt);
+  requestAnimationFrame(loop);
+}
+function setPlaying(p) {
+  playing = p;
+  playBtn.textContent = p ? '❚❚ השהה' : '▶ נגן';
+  if (p) { if (t >= D) t = 0; lastNow = performance.now(); requestAnimationFrame(loop); }
+}
+frame.addEventListener('load', () => {
+  W = frame.contentWindow;
+  const ready = () => {
+    document.getElementById('loading').remove();
+    D = W.DURATION; FPS = W.FPS;
+    scrub.max = D; scrub.step = 1 / FPS;
+    const sc = document.getElementById('scenes');
+    W.SCENES.forEach(s => {
+      const b = document.createElement('button');
+      b.textContent = s.name; b.dataset.t = s.t;
+      b.onclick = () => { setPlaying(false); show(s.t); };
+      sc.appendChild(b);
+    });
+    show(0);
+  };
+  if (W.__ready) ready(); else W.addEventListener('stage-ready', ready, { once: true });
+});
+playBtn.onclick = () => setPlaying(!playing);
+scrub.oninput = () => { setPlaying(false); show(+scrub.value); };
+document.getElementById('back').onclick = () => { setPlaying(false); show(Math.round(t * FPS - 1) / FPS); };
+document.getElementById('fwd').onclick = () => { setPlaying(false); show(Math.round(t * FPS + 1) / FPS); };
+addEventListener('keydown', e => {
+  if (!W) return;
+  if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); }
+  const step = e.shiftKey ? 1 : 1 / FPS;
+  if (e.key === 'ArrowLeft') { setPlaying(false); show(t - step); }
+  if (e.key === 'ArrowRight') { setPlaying(false); show(t + step); }
+});
+</script>
+</body>
+</html>

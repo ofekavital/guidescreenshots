@@ -1,0 +1,17 @@
+{
+  "name": "sms-studio-video",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Motion graphics video for SMS Studio (עורך מסרונים)",
+  "scripts": {
+    "serve": "node server.mjs",
+    "render": "node render/render.mjs"
+  },
+  "dependencies": {
+    "@fontsource/arimo": "^5.3.0",
+    "@fontsource/heebo": "^5.3.0",
+    "gsap": "^3.15.0",
+    "playwright": "^1.56.1"
+  }
+}

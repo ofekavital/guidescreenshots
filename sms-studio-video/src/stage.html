@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>SMS Studio — Stage</title>
+<link rel="stylesheet" href="../node_modules/@fontsource/heebo/400.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/heebo/500.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/heebo/600.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/heebo/700.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/arimo/400.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/arimo/700.css">
+<style>
+:root{
+  --blue:#2D3396;--blue-2:#242A7E;--orange:#E0520B;--sky:#5F9AE5;
+  --ink:#26334A;--ink-2:#606B7A;--bg:#EEF1F5;--success:#247B55;--danger:#B73A35;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#2D3396}
+body{font-family:Heebo,sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:#E6E8EC}
+.layer{position:absolute;inset:0}
+#bg{background:radial-gradient(1400px 900px at 70% 30%,#F4F6F9 0%,#E2E5EA 100%)}
+#bgApp{background:radial-gradient(1500px 1000px at 50% 40%,#F5F7FB 0%,#E3E8F0 70%,#DCE2EC 100%);opacity:0}
+
+/* camera + devices */
+#rig{transform-origin:960px 540px}
+#deviceChrome{position:absolute;left:0;top:0;opacity:0;background:#1B2030;
+  box-shadow:0 40px 90px rgba(24,32,64,.28),0 0 0 1px rgba(255,255,255,.06) inset}
+#deviceNotch{position:absolute;left:0;top:0;width:110px;height:24px;background:#1B2030;border-radius:0 0 14px 14px;opacity:0}
+#laptopBase{position:absolute;left:0;top:0;opacity:0;height:26px;background:linear-gradient(#D9DDE5,#AEB5C2);border-radius:2px 2px 18px 18px;
+  box-shadow:0 22px 40px rgba(24,32,64,.25)}
+#laptopBase::before{content:'';position:absolute;left:50%;top:0;width:160px;height:10px;margin-left:-80px;background:#9AA1AE;border-radius:0 0 10px 10px}
+#appLayer{transform-origin:960px 540px}
+#appWrap{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;background:#EEF1F5}
+#appFrame{display:block;border:0;width:1920px;height:1080px;background:#EEF1F5}
+
+/* legacy */
+#legacyLayer{transform-origin:640px 540px}
+
+/* captions */
+.cap{position:absolute;direction:rtl;text-align:right;font-weight:700;color:var(--blue);line-height:1.12;letter-spacing:-.5px;white-space:nowrap}
+.cap .w{display:inline-block;opacity:0}
+.cap .ln{display:block}
+.cap.white{color:#FFF}
+.cap.center{text-align:center}
+.cap.pill .ln{display:inline-block;background:var(--blue);color:#FFF;padding:8px 40px 18px;border-radius:26px;
+  box-shadow:0 18px 44px rgba(36,42,126,.32);transform-origin:100% 50%;opacity:0}
+
+/* wipe + logo */
+#wipe{background:var(--blue);clip-path:circle(0px at 50% 50%)}
+#logoLayer{pointer-events:none}
+#logoImg{position:absolute;left:0;top:0;transform-origin:0 0;opacity:0}
+#logoTitle{position:absolute;left:0;top:0;transform-origin:0 0;opacity:0;color:#FFF;font-weight:700;white-space:nowrap;direction:rtl}
+#headerBlue{position:absolute;left:0;top:0;width:1920px;height:1080px;background:var(--blue);opacity:0;transform-origin:0 0}
+
+/* scene 5 split */
+#split{opacity:0}
+.sp-card{position:absolute;top:262px;width:860px;height:690px;background:#FFF;border:1px solid #CDD6E1;border-radius:22px;
+  box-shadow:0 24px 60px rgba(30,40,72,.12);direction:rtl;overflow:visible}
+.sp-head{height:86px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E1E6EE}
+.sp-title{font-size:30px;font-weight:700;color:var(--blue)}
+.sp-sub{font-size:20px;font-weight:500;color:var(--ink-2)}
+.sp-body{padding:30px 40px;font-size:28px;line-height:52px;color:var(--ink);font-weight:400}
+.sp-line{height:52px;white-space:pre;position:relative}
+#spLeft{left:60px}
+#spRight{left:1000px}
+#spRight .sp-body{white-space:pre-wrap;line-height:60px}
+#spRight .output-token{direction:ltr;unicode-bidi:isolate;display:inline-block;color:var(--blue);font-weight:700;background:#F0F2FB;
+  border-radius:7px;padding:0 6px;line-height:44px;margin:0 2px;transform-origin:50% 60%}
+#spRight .sp-out{background:#F6F8FD;border:1px solid #D6DEEE;border-radius:14px;padding:18px 24px}
+.sp-mark{position:absolute;width:44px;height:36px;border-radius:9px;background:#E6EFFC;color:var(--sky);display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:700;opacity:0;direction:ltr}
+.sp-mark.dbl{background:#EEF1F5;color:#9AA3B0}
+#spWires{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible;pointer-events:none}
+#spWires path{fill:none;stroke:var(--sky);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.sp-dot{fill:var(--sky)}
+
+/* fly card */
+#flyCard{position:absolute;left:0;top:0;opacity:0;background:#FFF;border:1px solid #CDD6E1;border-radius:14px;box-shadow:0 30px 70px rgba(30,40,72,.25);
+  direction:rtl;padding:18px 22px;font-size:15px;line-height:1.9;color:var(--ink);white-space:pre-wrap;transform-origin:0 0;overflow:hidden}
+#flyCard .output-token{direction:ltr;unicode-bidi:isolate;color:var(--blue);font-weight:700;background:#F0F2FB;border-radius:3px;padding-inline:2px}
+
+/* pointer */
+#cursor{position:absolute;left:0;top:0;width:44px;height:52px;opacity:0;transform-origin:4px 4px;filter:drop-shadow(0 6px 10px rgba(20,25,50,.3))}
+#clickRing{position:absolute;left:0;top:0;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:5px solid var(--orange);opacity:0}
+#tapDot{position:absolute;left:0;top:0;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;background:rgba(95,154,229,.35);border:3px solid rgba(95,154,229,.9);opacity:0}
+
+/* overlays */
+.halo{position:absolute;border-radius:14px;box-shadow:0 0 0 0 rgba(95,154,229,.0);opacity:0;pointer-events:none}
+#checkBadge{position:absolute;width:64px;height:64px;border-radius:50%;background:var(--success);opacity:0;box-shadow:0 10px 26px rgba(36,123,85,.35);
+  display:flex;align-items:center;justify-content:center}
+#checkBadge svg{width:38px;height:38px;fill:none;stroke:#FFF;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+#copyBurst{position:absolute;width:10px;height:10px;border-radius:50%;border:4px solid var(--orange);opacity:0}
+#pngCard{position:absolute;left:0;top:0;opacity:0;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(30,40,72,.3);background:#FFF;transform-origin:50% 50%}
+#pngCard img{display:block;width:100%;height:auto}
+
+/* end card */
+#endcard{background:var(--blue);opacity:0}
+#endWords{position:absolute;left:0;right:0;top:250px;text-align:center;font-size:124px;font-weight:700;color:#FFF;direction:rtl;white-space:nowrap}
+#endWords .w{display:inline-block;margin:0 22px;opacity:0}
+#endLogo{position:absolute;left:50%;top:548px;width:330px;margin-left:-165px;opacity:0}
+#endLine{position:absolute;left:0;right:0;top:790px;text-align:center;font-size:44px;font-weight:500;color:rgba(255,255,255,.88);direction:rtl;opacity:0}
+
+#flash{background:#FFF;opacity:0;pointer-events:none}
+#veil{background:#E6E8EC;z-index:100}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"></div>
+  <div id="bgApp" class="layer"></div>
+
+  <div id="rig" class="layer">
+    <div id="laptopBase"></div>
+    <div id="deviceChrome"></div>
+    <div id="appLayer" class="layer">
+      <div id="appWrap"><iframe id="appFrame" title="SMS Studio"></iframe></div>
+    </div>
+    <div id="deviceNotch"></div>
+  </div>
+
+  <div id="legacyLayer" class="layer"><div id="legacy"></div></div>
+
+  <div id="split" class="layer">
+    <div class="sp-card" id="spLeft">
+      <div class="sp-head"><span class="sp-title">נוסח ההודעה</span><span class="sp-sub">מה שכתבתם</span></div>
+      <div class="sp-body" id="spLeftBody"></div>
+    </div>
+    <div class="sp-card" id="spRight">
+      <div class="sp-head"><span class="sp-title">להדבקה במערכת</span><span class="sp-sub">מה שיישלח</span></div>
+      <div class="sp-body"><div class="sp-out" id="spRightBody"></div></div>
+    </div>
+    <svg id="spWires"></svg>
+    <div id="spMarks"></div>
+  </div>
+
+  <div id="haloLayer" class="layer"></div>
+  <div id="flyCard"></div>
+  <div id="checkBadge"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+  <div id="copyBurst"></div>
+  <div id="pngCard"><img id="pngImg" alt=""></div>
+
+  <div id="wipe" class="layer"></div>
+  <div id="logoLayer" class="layer">
+    <div id="headerBlue"></div>
+    <img id="logoImg" alt="">
+    <div id="logoTitle">עורך מסרונים</div>
+  </div>
+
+  <div id="captions" class="layer"></div>
+
+  <div id="endcard" class="layer">
+    <div id="endWords"><span class="w">לנסח.</span><span class="w">לראות.</span><span class="w">להעתיק.</span></div>
+    <img id="endLogo" alt="">
+    <div id="endLine">מה שכותבים, זה מה שנשלח.</div>
+  </div>
+
+  <div id="clickRing"></div>
+  <div id="tapDot"></div>
+  <svg id="cursor" viewBox="0 0 44 52"><path d="M4 4 L4 40 L13.5 31 L20 46 L27 43 L20.5 28.5 L34 28.5 Z" fill="#FFFFFF" stroke="#1D2240" stroke-width="2.6" stroke-linejoin="round"/></svg>
+
+  <div id="flash" class="layer"></div>
+  <div id="veil" class="layer"></div>
+</div>
+
+<script src="../node_modules/gsap/dist/gsap.min.js"></script>
+<script src="../node_modules/gsap/dist/CustomEase.min.js"></script>
+<script src="seed.js"></script>
+<script src="bridge.js"></script>
+<script src="legacy-scene.js"></script>
+<script src="timeline.js"></script>
+</body>
+</html>
