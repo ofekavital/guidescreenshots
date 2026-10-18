@@ -12,7 +12,7 @@ index 13722e0..a73a8da 100644
                  zero_rank_log(logger, f"resume from global_step: {ckpt['global_step']}")
                  resume_global_step = ckpt["global_step"]
 diff --git a/latentsync/pipelines/lipsync_pipeline.py b/latentsync/pipelines/lipsync_pipeline.py
-index 693155e..2010a95 100644
+index 693155e..8e56813 100644
 --- a/latentsync/pipelines/lipsync_pipeline.py
 +++ b/latentsync/pipelines/lipsync_pipeline.py
 @@ -140,7 +140,8 @@ class LipsyncPipeline(DiffusionPipeline):
@@ -70,7 +70,19 @@ index 693155e..2010a95 100644
          self.set_progress_bar_config(desc=f"Sample frames: {num_frames}")
  
          # 1. Default height and width to unet
-@@ -473,5 +482,5 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -399,6 +408,11 @@ class LipsyncPipeline(DiffusionPipeline):
+             ref_pixel_values, masked_pixel_values, masks = self.image_processor.prepare_masks_and_masked_images(
+                 inference_faces, affine_transform=False
+             )
++            # פריים ייחוס קבוע (פה סגור ונייטרלי) במקום הפריים עצמו: אחרת המודל מעתיק את תנועת הפה המקורית
++            ref_idx = os.environ.get("LS_REF_FRAME")
++            if ref_idx is not None:
++                ref_face = faces[min(int(ref_idx), len(faces) - 1)].unsqueeze(0).repeat(len(inference_faces), 1, 1, 1)
++                ref_pixel_values = self.image_processor.prepare_masks_and_masked_images(ref_face, affine_transform=False)[0]
+ 
+             # 7. Prepare mask latent variables
+             mask_latents, masked_image_latents = self.prepare_mask_latents(
+@@ -473,5 +487,5 @@ class LipsyncPipeline(DiffusionPipeline):
  
          sf.write(os.path.join(temp_dir, "audio.wav"), audio_samples, audio_sample_rate)
  

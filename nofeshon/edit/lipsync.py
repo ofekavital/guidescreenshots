@@ -58,6 +58,8 @@ def render(r, stem):
          "-an", "-c:v", "libx264", "-crf", "10", "-preset", "fast", v])
     run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t0:.4f}", "-t", f"{dur:.4f}", "-i", stem, "-ac", "1", "-ar", "16000", au])
     env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count()))
+    if "ref" in r:
+        env["LS_REF_FRAME"] = str(r["ref"])
     py = os.path.join(LS, ".venv", "bin", "python")
     log = os.path.join(DIR, f"{r['name']}.log")
     with open(log, "w") as fh:
