@@ -56,14 +56,17 @@ def main():
     temp_main = m2.startswith(REF)
 
     inputs = ["-i", picture, "-i", os.path.join(WORK, "dialog.wav"), "-i", m1, "-i", m2]
+    if temp_main:
+        # עותק שני של הפסקול הזמני, מהשנייה ה־8, כדי להאריך אותו (קלט נפרד; asplit+acrossfade נקטע)
+        inputs += ["-ss", "8", "-i", m2]
     fc = []
     # פסקול הפתיחה: מההתחלה ועד השעון, עם יציאה רכה אל תוך השעון
     fc.append(f"[2:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{clock + 1.5},"
               f"afade=t=out:st={clock - 0.3}:d=1.8,volume=0.9[m1]")
     if temp_main:
         # הפסקול הזמני קצר מהנדרש: שני עותקים בהצלבה של 3 שניות
-        fc.append(f"[3:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[m2a][m2b0]")
-        fc.append(f"[m2b0]atrim=start=8,asetpts=PTS-STARTPTS[m2b]")
+        fc.append(f"[3:a]aresample=48000,aformat=channel_layouts=stereo[m2a]")
+        fc.append(f"[4:a]aresample=48000,aformat=channel_layouts=stereo[m2b]")
         fc.append(f"[m2a][m2b]acrossfade=d=3[m2c]")
         main_src = "[m2c]"
     else:
@@ -76,7 +79,7 @@ def main():
 
     # קריינות + דיאלוג = ערוץ "הדיבור" שמנמיך את המוזיקה
     voice = ["[1:a]aresample=48000,aformat=channel_layouts=stereo[dlg]"]
-    k = 4
+    k = 5 if temp_main else 4
     vo_labels = ["[dlg]"]
     for f, t in placed("vo"):
         inputs += ["-i", f]
