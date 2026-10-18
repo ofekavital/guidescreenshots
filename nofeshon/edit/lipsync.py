@@ -33,17 +33,23 @@ def frame(t):
     return round(t * FPS_NUM / FPS_DEN)
 
 
-def voice_stem():
-    """כל הקולות של סצנה 1 (בלי אפקטים ומוזיקה) על זמן המקור, 16kHz מונו."""
+def voice_stem(r=None):
+    """כל הקולות של סצנה 1 (בלי אפקטים ומוזיקה) על זמן המקור, 16kHz מונו.
+    drive בטווח: קול שמניע את השפתיים במקום אחד הקולות (למשל גרסה מדוברת של לחישה, באותו תזמון);
+    בסרט נשמע הקול המקורי, והשפתיים זזות לפי ההיגוי של הגרסה המדוברת."""
+    drive = (r or {}).get("drive")
     files = sorted(glob.glob(os.path.join(WORK, "audio", "vo", "01~*.wav")))
-    out = os.path.join(DIR, "voice_01.wav")
+    placed = [(f, float(os.path.basename(f)[:-4].split("@")[1])) for f in files]
+    if drive:
+        placed = [(f, at) for f, at in placed if os.path.basename(f).split("~")[1].split("@")[0] != drive["instead_of"]]
+        placed.append((drive["src"], drive["at"]))
+    out = os.path.join(DIR, f"voice_01{'_' + r['name'] if drive else ''}.wav")
     ins, fc = [], []
-    for k, f in enumerate(files):
-        at = float(os.path.basename(f)[:-4].split("@")[1])
+    for k, (f, at) in enumerate(placed):
         ins += ["-i", f]
         ms = round(at * 1000)
         fc.append(f"[{k}:a]adelay={ms}|{ms}[v{k}]")
-    fc.append("".join(f"[v{k}]" for k in range(len(files))) + f"amix=inputs={len(files)}:normalize=0,apad=whole_dur=45[m]")
+    fc.append("".join(f"[v{k}]" for k in range(len(placed))) + f"amix=inputs={len(placed)}:normalize=0,apad=whole_dur=45[m]")
     run(["ffmpeg", "-v", "error", "-y", *ins, "-filter_complex", ";".join(fc), "-map", "[m]", "-ac", "1", "-ar", "16000", out])
     return out
 
@@ -104,7 +110,7 @@ def main():
         for r in CFG["ranges"]:
             done = os.path.exists(os.path.join(DIR, f"{r['name']}_ls.mp4"))
             if (only and r["name"] == only) or (not only and not done):
-                render(r, stem)
+                render(r, voice_stem(r) if r.get("drive") else stem)
         if only:
             return
     splice()
