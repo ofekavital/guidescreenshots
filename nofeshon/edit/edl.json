@@ -1,0 +1,72 @@
+{
+  "fps": 24,
+  "width": 1920,
+  "height": 1080,
+  "footage": "/home/user/footage/raw",
+  "crops": {
+    "1.mp4": "crop=1792:1008:0:136"
+  },
+  "segments": [
+    { "id": "01a", "act": "opening", "scene": "01", "src": "1.mp4", "in": 0.0, "out": 10.2, "audio": true, "note": "ההרצאה — מוטי מדבר, רוני משועמם" },
+    { "id": "01b", "act": "opening", "scene": "01", "src": "1.mp4", "in": 15.0, "out": 17.4, "audio": true, "note": "מוטי" },
+    { "id": "01c", "act": "opening", "scene": "01", "src": "1.mp4", "in": 22.3, "out": 27.2, "audio": true, "note": "שוט רחב של האולם הריק" },
+    { "id": "01d", "act": "opening", "scene": "01", "src": "1.mp4", "in": 33.0, "out": 39.5, "audio": true, "note": "רוני נרדם" },
+    { "id": "02", "act": "opening", "scene": "02", "src": "2.mp4", "in": 0.0, "out": 4.4, "note": "השעון 2017 ← 2026" },
+
+    { "id": "03", "act": "news", "scene": "03", "src": "3-5.mov", "in": 0.4, "out": 2.4, "note": "אבי במנוף" },
+    { "id": "03b", "act": "news", "scene": "03", "src": "3-5.mov", "in": 7.6, "out": 9.2, "note": "מסיר כפפות" },
+    { "id": "04-05", "act": "news", "scene": "04-05", "src": "3-5.mov", "in": 10.0, "out": 14.6, "note": "קורא, מכריז, העמיתים מצטרפים" },
+    { "id": "06", "act": "news", "scene": "06", "src": "6.mov", "in": 0.3, "out": 3.9, "note": "הצולל" },
+    { "id": "07", "act": "news", "scene": "07", "src": "7+9.mov", "in": 0.0, "out": 2.2, "note": "הבשורה בין חברות המשרד" },
+    { "id": "08", "act": "news", "scene": "08", "src": "8.mov", "in": 0.6, "out": 3.8, "note": "מתקשר לאשתו" },
+    { "id": "09", "act": "news", "scene": "09", "src": "7+9.mov", "in": 2.3, "out": 5.6, "note": "״נסגור טיסה ביחד?״" },
+    { "id": "10-11", "act": "news", "scene": "10-11", "type": "split", "right": { "src": "10.mp4", "in": 0.0 }, "left": { "src": "11.mp4", "in": 0.0 }, "dur": 3.8, "note": "נועה ומיכל — מסך מפוצל" },
+    { "id": "12", "act": "news", "scene": "12", "src": "12+13.mov", "in": 0.4, "out": 1.9, "note": "גיל קורא את ההזמנה" },
+    { "id": "12b", "act": "news", "scene": "12", "src": "12+13.mov", "in": 2.0, "out": 3.9, "note": "מבט על הטלפון — שכבת הזמנה" },
+    { "id": "13", "act": "news", "scene": "13", "src": "12+13.mov", "in": 4.6, "out": 7.4, "note": "״אנחנו בפנים!״" },
+    { "id": "14", "act": "news", "scene": "14", "src": "14.mp4", "in": 0.0, "out": 1.9, "note": "המילואימניק מסיר קסדה" },
+    { "id": "14b", "act": "news", "scene": "14", "src": "14.mp4", "in": 3.4, "out": 7.6, "note": "קורא את הודעת הארכת הזכאות" },
+
+    { "id": "15", "act": "whatsapp", "scene": "15", "src": "15.mp4", "in": 4.5, "out": 12.5, "note": "קבוצות ה־WhatsApp" },
+
+    { "id": "16", "act": "israel", "scene": "16", "src": "16.mp4", "in": 0.0, "out": 3.8, "note": "גיל ומשפחתו בכנרת" },
+    { "id": "17", "act": "israel", "scene": "17", "src": "17.mov", "in": 2.4, "out": 6.9, "note": "המפגש בלובי" },
+    { "id": "18", "act": "israel", "scene": "18", "src": "18.mov", "in": 2.3, "out": 5.9, "note": "נועה ומיכל בגליל" },
+    { "id": "19", "act": "israel", "scene": "19", "src": "19.mov", "in": 0.0, "out": 3.4, "note": "הנופש היחיד באילת" },
+    { "id": "20", "act": "israel", "scene": "20", "src": "20.mov", "in": 0.4, "out": 4.2, "note": "המשפחה החרדית" },
+    { "id": "21", "act": "israel", "scene": "21", "src": "21.mov", "in": 0.0, "out": 2.4, "note": "המילואימניק ובת זוגו בגולן (רק החלק במדים)" },
+    { "id": "22", "act": "israel", "scene": "22", "src": "22-23.mp4", "in": 0.0, "out": 3.2, "note": "המתנה בחיפה" },
+    { "id": "23", "act": "israel", "scene": "23", "src": "22-23.mp4", "in": 5.0, "out": 8.0, "note": "שובר BUYME בטלפון" },
+
+    { "id": "23.5", "act": "abroad", "scene": "23.5", "src": "23.5.mp4", "in": 0.4, "out": 3.8, "note": "קפה וכריך בשדה" },
+    { "id": "24a", "act": "abroad", "scene": "24", "src": "24.mp4", "in": 0.0, "out": 7.4, "speed": 1.6, "note": "המטוס — המיתוגים מתחלפים" },
+    { "id": "24b", "act": "abroad", "scene": "24", "src": "24.mp4", "in": 7.4, "out": 9.9, "speed": 1.3, "note": "כניסה לחלון" },
+    { "id": "24c", "act": "abroad", "scene": "24", "src": "24.mp4", "in": 11.4, "out": 15.0, "note": "השוקולד לרוני" },
+    { "id": "25", "act": "abroad", "scene": "25", "src": "25-28.mov", "in": 0.0, "out": 2.4, "note": "עלייה להסעה" },
+    { "id": "26", "act": "abroad", "scene": "26", "src": "25-28.mov", "in": 4.6, "out": 9.2, "note": "היכרות באוטובוס" },
+    { "id": "27-28", "act": "abroad", "scene": "27-28", "src": "25-28.mov", "in": 12.5, "out": 15.0, "note": "הליכה אל המלון" },
+    { "id": "29", "act": "abroad", "scene": "29", "src": "29.mp4", "in": 0.0, "out": 2.5, "note": "תאילנד — הגעה" },
+    { "id": "29b", "act": "abroad", "scene": "29", "src": "29.mp4", "in": 2.7, "out": 4.9, "note": "תאילנד — סלפי" },
+    { "id": "30", "act": "abroad", "scene": "30", "src": "30.mov", "in": 0.0, "out": 3.8, "note": "יוון — הגעה נגישה" },
+
+    { "id": "32", "act": "experiences", "scene": "32", "src": "32.mov", "in": 0.0, "out": 3.0, "note": "קיאקים בצפון" },
+    { "id": "33", "act": "experiences", "scene": "33", "src": "33.mov", "in": 0.0, "out": 2.0, "note": "טיול שטח — רחפן" },
+    { "id": "33b", "act": "experiences", "scene": "33", "src": "33.mov", "in": 3.4, "out": 5.6, "note": "טיול שטח — ברכב" },
+    { "id": "37", "act": "experiences", "scene": "37", "src": "37.mov", "in": 0.8, "out": 4.4, "note": "חוות האלפקות" },
+    { "id": "34", "act": "experiences", "scene": "34", "src": "34.mov", "in": 0.0, "out": 1.4, "note": "רכבל מנרה — חוץ" },
+    { "id": "34b", "act": "experiences", "scene": "34", "src": "34.mov", "in": 1.8, "out": 4.6, "note": "רכבל מנרה — פנים" },
+    { "id": "31", "act": "experiences", "scene": "31", "src": "31.mp4", "in": 0.0, "out": 3.4, "note": "השוק הצף בתאילנד" },
+    { "id": "36", "act": "experiences", "scene": "36", "src": "36.mp4", "in": 0.0, "out": 3.4, "note": "סיור מודרך בווינה" },
+    { "id": "35", "act": "experiences", "scene": "35", "src": "35.mov", "in": 1.9, "out": 4.8, "note": "ספא" },
+    { "id": "38", "act": "experiences", "scene": "38", "src": "38.mov", "in": 0.0, "out": 1.4, "note": "מופע WOW — במה" },
+    { "id": "38b", "act": "experiences", "scene": "38", "src": "38.mov", "in": 1.6, "out": 4.0, "note": "מופע WOW — קהל" },
+
+    { "id": "40", "act": "ending", "scene": "40", "src": "40_42-45.mov", "in": 0.0, "out": 4.4, "note": "רוני בריזורט, מבחין בטלפון" },
+    { "id": "41", "act": "ending", "scene": "41", "src": "41.mov", "in": 0.0, "out": 7.4, "speed": 1.5, "note": "דפדוף בתמונות" },
+    { "id": "42", "act": "ending", "scene": "42", "src": "41.mov", "in": 7.4, "out": 8.9, "note": "הסקר — שכבת מושן" },
+    { "id": "43", "act": "ending", "scene": "43", "src": "41.mov", "in": 9.0, "out": 11.0, "note": "מוטי מתקשר" },
+    { "id": "44", "act": "ending", "scene": "44", "src": "40_42-45.mov", "in": 13.2, "out": 16.0, "note": "״מוטי, אני בחופשה. אחזור אליך״ — גב למצלמה" },
+    { "id": "45", "act": "ending", "scene": "45", "src": "40_42-45.mov", "in": 16.8, "out": 22.6, "note": "מניח את הטלפון, חוזר לחברים ויוצא מאחורי העמוד" },
+    { "id": "46", "act": "ending", "scene": "46", "type": "card", "dur": 4.5, "note": "כרטיס הסיום — נבנה במושן" }
+  ]
+}
