@@ -54,14 +54,25 @@ def main():
     m1 = pick("music_open", os.path.join(REF, "01_opening_Unproductive_Status_Update.mp3"))
     m2 = pick("music_main", os.path.join(REF, "02_main_Chasing_Horizons.mp3"))
     temp_main = m2.startswith(REF)
+    temp_open = m1.startswith(REF)
 
     inputs = ["-i", picture, "-i", os.path.join(WORK, "dialog.wav"), "-i", m1, "-i", m2]
     if temp_main:
         # עותק שני של הפסקול הזמני, מהשנייה ה־8, כדי להאריך אותו (קלט נפרד; asplit+acrossfade נקטע)
         inputs += ["-ss", "8", "-i", m2]
+    if temp_open:
+        # פסקול הפתיחה הזמני (38 שניות) קצר מהפתיחה וההרצאה (~45): עותק שני מהשנייה ה־6
+        inputs += ["-ss", "6", "-i", m1]
     fc = []
     # פסקול הפתיחה: מההתחלה ועד השעון, עם יציאה רכה אל תוך השעון
-    fc.append(f"[2:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{clock + 1.5},"
+    m1_src = "[2:a]"
+    if temp_open:
+        oi = 5 if temp_main else 4
+        fc.append(f"[2:a]aresample=48000,aformat=channel_layouts=stereo[m1a]")
+        fc.append(f"[{oi}:a]aresample=48000,aformat=channel_layouts=stereo[m1b]")
+        fc.append("[m1a][m1b]acrossfade=d=2.5[m1c]")
+        m1_src = "[m1c]"
+    fc.append(f"{m1_src}aresample=48000,aformat=channel_layouts=stereo,atrim=0:{clock + 1.5},"
               f"afade=t=out:st={clock - 0.3}:d=1.8,volume=0.9[m1]")
     if temp_main:
         # הפסקול הזמני קצר מהנדרש: שני עותקים בהצלבה של 3 שניות
@@ -79,7 +90,7 @@ def main():
 
     # קריינות + דיאלוג = ערוץ "הדיבור" שמנמיך את המוזיקה
     voice = ["[1:a]aresample=48000,aformat=channel_layouts=stereo[dlg]"]
-    k = 5 if temp_main else 4
+    k = 4 + int(temp_main) + int(temp_open)
     vo_labels = ["[dlg]"]
     for f, t in placed("vo"):
         inputs += ["-i", f]
