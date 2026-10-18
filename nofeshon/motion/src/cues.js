@@ -37,7 +37,7 @@ window.CUES = [
   { type: 'chip', seg: '18', at: 0.35, dur: 3.1, icon: 'friends', main: 'עם חברות מהעבודה', sub: 'הגליל', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '19', at: 0.35, dur: 2.95, icon: 'solo', main: 'לבד', sub: 'אילת', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '20', at: 0.3, dur: 3.35, icon: 'kosher', main: 'כשרות ושמירת שבת', sub: 'נופשון מותאם לציבור החרדי', subIcon: false, pos: { right: 90, bottom: 84 } },
-  { type: 'chip', seg: '21', at: 0.2, dur: 2.15, icon: 'couple', main: 'בזוג', sub: 'רמת הגולן', pos: { right: 90, bottom: 84 } },
+  { type: 'chip', seg: '21', at: 0.4, dur: 4.2, icon: 'couple', main: 'בזוג', sub: 'רמת הגולן', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '22', at: 0.2, dur: 1.5, icon: 'family', main: 'אמא ובת', sub: 'חיפה', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '22', at: 1.65, dur: 1.55, icon: 'gift', main: 'שי מחכה לכם במלון', pos: { right: 90, bottom: 84 } },
   { type: 'notify', seg: '23', at: 0.15, dur: 4.25, width: 720, pos: { right: 100, top: 64 }, appIcon: 'gift',
