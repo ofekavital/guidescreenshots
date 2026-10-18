@@ -306,6 +306,60 @@
       };
     },
 
+    // שקף הפתיחה: חושך של אולם הרצאות, אלומת מקרן, אבק וגרעיניות, וטקסט במכונת כתיבה
+    opener(c) {
+      const w = wrap({ pos: { inset: 0 } }, 9);
+      const rnd = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const dust = Array.from({ length: 70 }, (_, i) => ({ x: rnd(i) * 1920, y: rnd(i + 99) * 1080, r: 0.8 + rnd(i + 7) * 2.4, s: 6 + rnd(i + 3) * 18, p: rnd(i + 51) * 6.28 }));
+      const chars = [...c.title].map((ch) => `<span class="ch">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+      w.innerHTML = `<div class="opener">
+        <div class="beam"></div>
+        <svg class="dust" viewBox="0 0 1920 1080">${dust.map((d) => `<circle r="${d.r}" fill="#fff"/>`).join('')}</svg>
+        <div class="txt">
+          <div class="year">${c.year}</div>
+          <div class="t1">${chars}<i class="caret"></i></div>
+          <div class="rule"></div>
+          <div class="t2">${c.sub}</div>
+        </div>
+        <svg class="grain" viewBox="0 0 1920 1080"><filter id="gn"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="1"/></filter><rect width="1920" height="1080" filter="url(#gn)"/></svg>
+        <div class="vig"></div>
+      </div>`;
+      const op = w.firstChild, beam = w.querySelector('.beam'), circles = [...w.querySelectorAll('.dust circle')];
+      const year = w.querySelector('.year'), t1 = w.querySelector('.t1'), chs = [...w.querySelectorAll('.ch')], caret = w.querySelector('.caret');
+      const rule = w.querySelector('.rule'), t2 = w.querySelector('.t2'), turb = w.querySelector('feTurbulence');
+      return {
+        el: w,
+        update(lt, dur) {
+          const fade = 1 - E.inOutSine(P(lt, dur - 0.45, 0.45));
+          op.style.opacity = E.outCubic(P(lt, 0, 0.5)) * fade;
+          // הבהוב עדין של המקרן
+          beam.style.opacity = 0.75 + 0.08 * Math.sin(lt * 23) + 0.05 * Math.sin(lt * 61);
+          circles.forEach((el, i) => {
+            const d = dust[i];
+            el.setAttribute('cx', (d.x + Math.sin(lt * 0.4 + d.p) * d.s + lt * 8) % 1920);
+            el.setAttribute('cy', d.y - lt * d.s * 0.8);
+            el.setAttribute('opacity', 0.15 + 0.35 * (0.5 + 0.5 * Math.sin(lt * 1.3 + d.p)));
+          });
+          turb.setAttribute('seed', Math.floor(lt * 24) % 97);
+          const y = E.outExpo(P(lt, 0.25, 1.0));
+          year.style.opacity = y;
+          year.style.letterSpacing = lerp(40, 14, y) + 'px';
+          // מכונת הכתיבה: אות כל 70ms, הסמן עוקב אחרי האות האחרונה ומהבהב בהמתנה
+          const typed = Math.floor(clamp((lt - 0.75) / 0.07, 0, chs.length));
+          chs.forEach((s, i) => (s.style.visibility = i < typed ? 'visible' : 'hidden'));
+          const last = chs[Math.max(0, typed - 1)];
+          caret.style.left = (typed ? last.offsetLeft - 14 : chs[0].offsetLeft + chs[0].offsetWidth) + 'px';
+          caret.style.opacity = lt < 0.6 ? 0 : (typed < chs.length ? 1 : Math.floor(lt * 2.4) % 2 ? 0 : 1) * (1 - P(lt, 2.6, 0.3));
+          const r = E.outExpo(P(lt, 1.75, 0.9));
+          rule.style.transform = `scaleX(${r})`;
+          const s = E.outExpo(P(lt, 1.95, 0.9));
+          t2.style.opacity = s;
+          t2.style.transform = `translate3d(0, ${(1 - s) * 18}px, 0)`;
+          t1.style.transform = `scale(${lerp(1.0, 1.03, P(lt, 0, dur))})`;
+        },
+      };
+    },
+
     endcard(c) {
       const w = wrap({ pos: { inset: 0 } }, 9);
       const wave = (y, amp, sw, op) => `<path d="M-200 ${y} C 300 ${y - amp}, 700 ${y + amp}, 1100 ${y - amp * 0.4} S 1800 ${y + amp}, 2200 ${y - amp * 0.6}" stroke="#fff" stroke-width="${sw}" stroke-opacity="${op}" fill="none"/>`;

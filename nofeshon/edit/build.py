@@ -61,6 +61,10 @@ def render_segment(i, seg, out):
             parts.append(f"[{k}:v]" + ",".join(base_vf(s["src"]) + [f"crop={W // 2}:{H}:{x}:0", "setpts=PTS-STARTPTS", f"fps={FPS}"]) + f"[{side}]")
         fc = ";".join(parts) + ";[left][right]hstack=2[v]"
         run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", fc, "-map", "[v]", "-frames:v", str(n), *ENC, out])
+    elif kind == "card" and seg.get("bg") == "black":
+        # שקף מלא שכולו מושן (שקף הפתיחה) — רקע שחור בלבד
+        run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", f"color=c=black:s={W}x{H}:r={FPS}",
+             "-frames:v", str(n), *ENC, out])
     elif kind == "card":
         # מקום שמור לכרטיס הסיום; שכבת המושן מציירת עליו את הכרטיס הסופי
         run(["ffmpeg", "-v", "error", "-y", "-loop", "1", "-i", os.path.join(RAW, "46.png"),

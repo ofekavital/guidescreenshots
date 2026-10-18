@@ -7,6 +7,7 @@
     "1.mp4": "crop=1792:1008:0:136"
   },
   "segments": [
+    { "id": "00", "act": "opening", "scene": "00", "type": "card", "bg": "black", "dur": 4.2, "note": "שקף פתיחה: 2016, השתלמות אמ״א, אי שם בצפון" },
     { "id": "01a", "act": "opening", "scene": "01", "src": "1.mp4", "in": 0.0, "out": 10.2, "audio": true, "note": "ההרצאה — מוטי מדבר, רוני משועמם" },
     { "id": "01b", "act": "opening", "scene": "01", "src": "1.mp4", "in": 15.0, "out": 17.4, "audio": true, "note": "מוטי" },
     { "id": "01c", "act": "opening", "scene": "01", "src": "1.mp4", "in": 22.3, "out": 27.2, "audio": true, "note": "שוט רחב של האולם הריק" },
