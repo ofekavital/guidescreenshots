@@ -81,7 +81,7 @@ def main():
         out = os.path.join(segdir, f"{seg['id']}.mp4")
         n = frames(seg)
         # סגמנט שלא השתנה מאז הרינדור הקודם לא מרונדר שוב
-        key = json.dumps({k: v for k, v in seg.items() if k != "note"}, sort_keys=True)
+        key = json.dumps({k: v for k, v in seg.items() if k not in ("note", "mute")}, sort_keys=True)
         stamp = out + ".key"
         fresh = os.path.exists(out) and os.path.exists(stamp) and open(stamp).read() == key
         if (only is None and not fresh) or seg["id"] == only:
@@ -111,7 +111,9 @@ def build_dialog(timeline, total):
     for k, s in enumerate(x for x in timeline if x.get("audio")):
         inputs += ["-ss", str(s["in"]), "-t", str(s["end"] - s["start"]), "-i", os.path.join(RAW, s["src"])]
         ms = round(s["start"] * 1000)
-        chains.append(f"[{k}:a]aresample=48000,afade=t=in:d=0.04,afade=t=out:st={s['end'] - s['start'] - 0.06}:d=0.06,adelay={ms}|{ms}[a{k}]")
+        # mute: קטעים בזמן המקור שמושתקים (למשל שיעולים שמוחלפים באפקטים מסונכרנים)
+        mute = "".join(f"volume=0:enable='between(t,{a - s['in']},{b - s['in']})'," for a, b in s.get("mute", []))
+        chains.append(f"[{k}:a]aresample=48000,{mute}afade=t=in:d=0.04,afade=t=out:st={s['end'] - s['start'] - 0.06}:d=0.06,adelay={ms}|{ms}[a{k}]")
     n = len(chains)
     out = os.path.join(WORK, "dialog.wav")
     fc = ";".join(chains) + ";" + "".join(f"[a{k}]" for k in range(n)) + f"amix=inputs={n}:normalize=0,apad=whole_dur={total}[a]"

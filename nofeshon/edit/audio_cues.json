@@ -1,7 +1,14 @@
 {
-  "note": "מיקום הקולות והאפקטים על השוטים. at — שניות מתחילת השוט; ss/to — חיתוך מתוך המקור; cut — קטעים להסרה מתוך הטייק (הידוק הפסקות); lufs — עוצמת יעד.",
+  "note": "מיקום הקולות והאפקטים על השוטים. השיעולים בסצנה 1 ממוקמים על הפריים הראשון של כל תנועת ראש, כפי שנמדד בעריכה עצמה (זמן המקור, כי השוט מתחיל ב־0). at — שניות מתחילת השוט; ss/to — חיתוך מתוך המקור; cut — קטעים להסרה מתוך הטייק (הידוק הפסקות); lufs — עוצמת יעד.",
   "src": "/home/user/footage/work/audio",
   "items": [
+    { "kind": "vo", "name": "cough1", "seg": "01", "at": 17.365, "src": "cough_src/stifle_a.mp3", "ss": 0.0, "to": 0.36, "peak": -16, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
+    { "kind": "vo", "name": "cough2", "seg": "01", "at": 17.615, "src": "cough_src/fit_c.mp3", "ss": 0.02, "to": 0.42, "peak": -11, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
+    { "kind": "vo", "name": "cough3", "seg": "01", "at": 18.115, "src": "cough_src/fit_a.mp3", "ss": 0.0, "to": 0.4, "peak": -10, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
+    { "kind": "vo", "name": "cough4", "seg": "01", "at": 18.532, "src": "cough_src/fit_c.mp3", "ss": 0.46, "to": 0.8, "peak": -10, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
+    { "kind": "vo", "name": "cough5", "seg": "01", "at": 18.948, "src": "cough_src/single_a.mp3", "ss": 0.0, "to": 0.38, "peak": -9, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
+    { "kind": "vo", "name": "cough6", "seg": "01", "at": 19.448, "src": "cough_src/fit_c.mp3", "ss": 0.82, "to": 1.25, "peak": -11, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
+    { "kind": "vo", "name": "cough7", "seg": "01", "at": 19.823, "src": "cough_src/single_c.mp3", "ss": 0.97, "to": 1.4, "peak": -13, "af": "aecho=1.0:0.9:28|47:0.10|0.06" },
     { "kind": "vo", "name": "n01", "seg": "02", "at": 0.55, "src": "takes/n01_a.mp3", "lufs": -16 },
     { "kind": "vo", "name": "n02a", "seg": "03", "at": 0.15, "src": "takes/n02_a.mp3", "to": 3.3, "lufs": -16 },
     { "kind": "vo", "name": "n02b", "seg": "04-05", "at": 3.1, "src": "takes/n02_a.mp3", "ss": 3.45, "lufs": -16 },

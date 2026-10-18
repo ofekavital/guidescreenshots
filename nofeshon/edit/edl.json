@@ -8,7 +8,7 @@
   },
   "segments": [
     { "id": "00", "act": "opening", "scene": "00", "type": "card", "bg": "black", "dur": 4.2, "note": "שקף פתיחה: 2017, השתלמות אמ״א, אי שם בצפון" },
-    { "id": "01", "act": "opening", "scene": "01", "src": "1.mp4", "in": 0.0, "out": 33.0, "audio": true, "note": "ההרצאה המקורית ברצף" },
+    { "id": "01", "act": "opening", "scene": "01", "src": "1.mp4", "in": 0.0, "out": 33.0, "audio": true, "mute": [[18.3, 20.85]], "note": "ההרצאה המקורית ברצף; השיעולים המקוריים מושתקים ומוחלפים באפקטים על תנועות הראש (audio_cues.json)" },
     { "id": "01z", "act": "opening", "scene": "01", "src": "1.mp4", "in": 33.0, "out": 40.5, "speed": 1.75, "note": "ההירדמות — אותו שוט ברצף, מואץ עד שהראש נופל" },
     { "id": "02", "act": "opening", "scene": "02", "src": "2.mp4", "in": 0.0, "out": 5.4, "note": "השעון 2017 ← 2026" },
 
