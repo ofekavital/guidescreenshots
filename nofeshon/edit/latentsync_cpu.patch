@@ -12,7 +12,7 @@ index 13722e0..a73a8da 100644
                  zero_rank_log(logger, f"resume from global_step: {ckpt['global_step']}")
                  resume_global_step = ckpt["global_step"]
 diff --git a/latentsync/pipelines/lipsync_pipeline.py b/latentsync/pipelines/lipsync_pipeline.py
-index 693155e..8e56813 100644
+index 693155e..4cb4da2 100644
 --- a/latentsync/pipelines/lipsync_pipeline.py
 +++ b/latentsync/pipelines/lipsync_pipeline.py
 @@ -140,7 +140,8 @@ class LipsyncPipeline(DiffusionPipeline):
@@ -70,19 +70,91 @@ index 693155e..8e56813 100644
          self.set_progress_bar_config(desc=f"Sample frames: {num_frames}")
  
          # 1. Default height and width to unet
-@@ -399,6 +408,11 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -389,9 +398,11 @@ class LipsyncPipeline(DiffusionPipeline):
+             if self.unet.add_audio_layer:
+                 audio_embeds = torch.stack(whisper_chunks[i * num_frames : (i + 1) * num_frames])
+                 audio_embeds = audio_embeds.to(device, dtype=weight_dtype)
++                sequential_cfg = do_classifier_free_guidance and os.environ.get("LS_SEQ_CFG") == "1"
+                 if do_classifier_free_guidance:
+                     null_audio_embeds = torch.zeros_like(audio_embeds)
+-                    audio_embeds = torch.cat([null_audio_embeds, audio_embeds])
++                    if not sequential_cfg:
++                        audio_embeds = torch.cat([null_audio_embeds, audio_embeds])
+             else:
+                 audio_embeds = None
+             inference_faces = faces[i * num_frames : (i + 1) * num_frames]
+@@ -399,6 +410,21 @@ class LipsyncPipeline(DiffusionPipeline):
              ref_pixel_values, masked_pixel_values, masks = self.image_processor.prepare_masks_and_masked_images(
                  inference_faces, affine_transform=False
              )
 +            # פריים ייחוס קבוע (פה סגור ונייטרלי) במקום הפריים עצמו: אחרת המודל מעתיק את תנועת הפה המקורית
 +            ref_idx = os.environ.get("LS_REF_FRAME")
 +            if ref_idx is not None:
-+                ref_face = faces[min(int(ref_idx), len(faces) - 1)].unsqueeze(0).repeat(len(inference_faces), 1, 1, 1)
++                if os.environ.get("LS_REF_VIDEO"):
++                    # פריים הייחוס מסרטון אחר (למשל מתוך השוט המלא כשמריצים רק קטע ממנו)
++                    if not hasattr(self, "_ref_face"):
++                        cap = cv2.VideoCapture(os.environ["LS_REF_VIDEO"])
++                        cap.set(cv2.CAP_PROP_POS_FRAMES, int(ref_idx))
++                        ok, fr = cap.read()
++                        self._ref_face = self.image_processor.affine_transform(cv2.cvtColor(fr, cv2.COLOR_BGR2RGB))[0]
++                    ref_one = self._ref_face
++                else:
++                    ref_one = faces[min(int(ref_idx), len(faces) - 1)]
++                ref_face = ref_one.unsqueeze(0).repeat(len(inference_faces), 1, 1, 1)
 +                ref_pixel_values = self.image_processor.prepare_masks_and_masked_images(ref_face, affine_transform=False)[0]
  
              # 7. Prepare mask latent variables
              mask_latents, masked_image_latents = self.prepare_mask_latents(
-@@ -473,5 +487,5 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -425,21 +451,33 @@ class LipsyncPipeline(DiffusionPipeline):
+             num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
+             with self.progress_bar(total=num_inference_steps) as progress_bar:
+                 for j, t in enumerate(timesteps):
+-                    # expand the latents if we are doing classifier free guidance
+-                    unet_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+-
+-                    unet_input = self.scheduler.scale_model_input(unet_input, t)
+-
+-                    # concat latents, mask, masked_image_latents in the channel dimension
+-                    unet_input = torch.cat([unet_input, mask_latents, masked_image_latents, ref_latents], dim=1)
+-
+-                    # predict the noise residual
+-                    noise_pred = self.unet(unet_input, t, encoder_hidden_states=audio_embeds).sample
+-
+-                    # perform guidance
+-                    if do_classifier_free_guidance:
+-                        noise_pred_uncond, noise_pred_audio = noise_pred.chunk(2)
+-                        noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_audio - noise_pred_uncond)
++                    if sequential_cfg:
++                        # CFG ברצף: שני ענפים באצווה של 16 במקום אצווה אחת של 32 (חוסך כמחצית הזיכרון במעבד)
++                        unet_input = self.scheduler.scale_model_input(latents, t)
++                        half = mask_latents.shape[0] // 2
++                        unet_input = torch.cat([unet_input, mask_latents[half:], masked_image_latents[half:], ref_latents[half:]], dim=1)
++                        preds = []
++                        for branch, emb in enumerate((null_audio_embeds, audio_embeds)):
++                            if getattr(self, "_deepcache", None) is not None:
++                                self._deepcache.branch = branch
++                            preds.append(self.unet(unet_input, t, encoder_hidden_states=emb).sample)
++                        noise_pred = preds[0] + guidance_scale * (preds[1] - preds[0])
++                    else:
++                        # expand the latents if we are doing classifier free guidance
++                        unet_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
++
++                        unet_input = self.scheduler.scale_model_input(unet_input, t)
++
++                        # concat latents, mask, masked_image_latents in the channel dimension
++                        unet_input = torch.cat([unet_input, mask_latents, masked_image_latents, ref_latents], dim=1)
++
++                        # predict the noise residual
++                        noise_pred = self.unet(unet_input, t, encoder_hidden_states=audio_embeds).sample
++
++                        # perform guidance
++                        if do_classifier_free_guidance:
++                            noise_pred_uncond, noise_pred_audio = noise_pred.chunk(2)
++                            noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_audio - noise_pred_uncond)
+ 
+                     # compute the previous noisy sample x_t -> x_t-1
+                     latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
+@@ -473,5 +511,5 @@ class LipsyncPipeline(DiffusionPipeline):
  
          sf.write(os.path.join(temp_dir, "audio.wav"), audio_samples, audio_sample_rate)
  
@@ -152,10 +224,38 @@ index 6aa9ab3..c9c558a 100644
      ) as writer:
          for video_frame in video_frames:
 diff --git a/scripts/inference.py b/scripts/inference.py
-index ae2ff67..83dc1d8 100644
+index ae2ff67..4d2d58c 100644
 --- a/scripts/inference.py
 +++ b/scripts/inference.py
-@@ -49,12 +49,14 @@ def main(config, args):
+@@ -24,6 +24,27 @@ from latentsync.whisper.audio2feature import Audio2Feature
+ from DeepCache import DeepCacheSDHelper
+ 
+ 
++class BranchDeepCache(DeepCacheSDHelper):
++    """DeepCache עם מטמון נפרד לכל ענף. ב־CFG שרץ ברצף (בלי אצווה כפולה, כדי לחסוך זיכרון במעבד)
++    הענף עם הקול והענף בלי הקול לא יכולים לחלוק את אותם פיצ'רים שמורים."""
++
++    branch = 0
++
++    def wrap_block_forward(self, block, block_name, block_i, layer_i, blocktype="down"):
++        key = (blocktype, block_name, block_i, layer_i)
++        self.function_dict[key] = block.forward
++
++        def wrapped_forward(*args, **kwargs):
++            skip = self.is_skip_step(block_i, layer_i, blocktype)
++            ck = (self.branch,) + key
++            result = self.cached_output[ck] if skip else self.function_dict[key](*args, **kwargs)
++            if not skip:
++                self.cached_output[ck] = result
++            return result
++
++        block.forward = wrapped_forward
++
++
+ def main(config, args):
+     if not os.path.exists(args.video_path):
+         raise RuntimeError(f"Video path '{args.video_path}' not found")
+@@ -49,12 +70,14 @@ def main(config, args):
  
      audio_encoder = Audio2Feature(
          model_path=whisper_model_path,
@@ -171,7 +271,7 @@ index ae2ff67..83dc1d8 100644
      vae.config.scaling_factor = 0.18215
      vae.config.shift_factor = 0
  
-@@ -71,7 +73,7 @@ def main(config, args):
+@@ -71,13 +94,14 @@ def main(config, args):
          audio_encoder=audio_encoder,
          unet=unet,
          scheduler=scheduler,
@@ -180,3 +280,11 @@ index ae2ff67..83dc1d8 100644
  
      # use DeepCache
      if args.enable_deepcache:
+-        helper = DeepCacheSDHelper(pipe=pipeline)
++        helper = BranchDeepCache(pipe=pipeline)
+         helper.set_params(cache_interval=3, cache_branch_id=0)
+         helper.enable()
++        pipeline._deepcache = helper
+ 
+     if args.seed != -1:
+         set_seed(args.seed)

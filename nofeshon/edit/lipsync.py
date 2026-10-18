@@ -63,7 +63,8 @@ def render(r, stem):
     run(["ffmpeg", "-v", "error", "-y", "-i", SRC, "-vf", f"trim=start_frame={a}:end_frame={b},setpts=PTS-STARTPTS",
          "-an", "-c:v", "libx264", "-crf", "10", "-preset", "fast", v])
     run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t0:.4f}", "-t", f"{dur:.4f}", "-i", stem, "-ac", "1", "-ar", "16000", au])
-    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count()))
+    # guidance מעל 1 רץ כשני מעברים ברצף (LS_SEQ_CFG), כדי שייכנס בזיכרון של מעבד בלי GPU
+    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count()), LS_SEQ_CFG="1")
     if "ref" in r:
         env["LS_REF_FRAME"] = str(r["ref"])
     py = os.path.join(LS, ".venv", "bin", "python")
