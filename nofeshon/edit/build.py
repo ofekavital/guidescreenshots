@@ -116,6 +116,10 @@ def build_dialog(timeline, total):
         chains.append(f"[{k}:a]aresample=48000,{mute}afade=t=in:d=0.04,afade=t=out:st={s['end'] - s['start'] - 0.06}:d=0.06,adelay={ms}|{ms}[a{k}]")
     n = len(chains)
     out = os.path.join(WORK, "dialog.wav")
+    if not n:
+        # אין סגמנט עם אודיו מקורי: ערוץ שקט באורך הסרט (כל הקולות מגיעים מ־audio_cues.json)
+        run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", f"anullsrc=r=48000:cl=stereo", "-t", str(total), out])
+        return out
     fc = ";".join(chains) + ";" + "".join(f"[a{k}]" for k in range(n)) + f"amix=inputs={n}:normalize=0,apad=whole_dur={total}[a]"
     run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", fc, "-map", "[a]", "-ac", "2", "-ar", "48000", out])
     return out

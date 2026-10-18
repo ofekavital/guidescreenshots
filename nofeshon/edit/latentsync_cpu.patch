@@ -1,0 +1,170 @@
+diff --git a/latentsync/models/unet.py b/latentsync/models/unet.py
+index 13722e0..a73a8da 100644
+--- a/latentsync/models/unet.py
++++ b/latentsync/models/unet.py
+@@ -496,7 +496,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
+         unet = cls.from_config(model_config).to(device)
+         if ckpt_path != "":
+             zero_rank_log(logger, f"Load from checkpoint: {ckpt_path}")
+-            ckpt = torch.load(ckpt_path, map_location=device, weights_only=True)
++            ckpt = torch.load(ckpt_path, map_location=device, weights_only=True, mmap=True)
+             if "global_step" in ckpt:
+                 zero_rank_log(logger, f"resume from global_step: {ckpt['global_step']}")
+                 resume_global_step = ckpt["global_step"]
+diff --git a/latentsync/pipelines/lipsync_pipeline.py b/latentsync/pipelines/lipsync_pipeline.py
+index 693155e..2010a95 100644
+--- a/latentsync/pipelines/lipsync_pipeline.py
++++ b/latentsync/pipelines/lipsync_pipeline.py
+@@ -140,7 +140,8 @@ class LipsyncPipeline(DiffusionPipeline):
+     def decode_latents(self, latents):
+         latents = latents / self.vae.config.scaling_factor + self.vae.config.shift_factor
+         latents = rearrange(latents, "b c f h w -> (b f) c h w")
+-        decoded_latents = self.vae.decode(latents).sample
++        # פריים אחד בכל פעם: על CPU הקידוד של 16 פריימים יחד ב־512 חורג מהזיכרון
++        decoded_latents = torch.cat([self.vae.decode(x).sample for x in latents.split(1)])
+         return decoded_latents
+ 
+     def prepare_extra_step_kwargs(self, generator, eta):
+@@ -202,7 +203,7 @@ class LipsyncPipeline(DiffusionPipeline):
+         masked_image = masked_image.to(device=device, dtype=dtype)
+ 
+         # encode the mask image into latents space so we can concatenate it to the latents
+-        masked_image_latents = self.vae.encode(masked_image).latent_dist.sample(generator=generator)
++        masked_image_latents = torch.cat([self.vae.encode(x).latent_dist.sample(generator=generator) for x in masked_image.split(1)])
+         masked_image_latents = (masked_image_latents - self.vae.config.shift_factor) * self.vae.config.scaling_factor
+ 
+         # aligning device to prevent device errors when concating it with the latent model input
+@@ -221,7 +222,7 @@ class LipsyncPipeline(DiffusionPipeline):
+ 
+     def prepare_image_latents(self, images, device, dtype, generator, do_classifier_free_guidance):
+         images = images.to(device=device, dtype=dtype)
+-        image_latents = self.vae.encode(images).latent_dist.sample(generator=generator)
++        image_latents = torch.cat([self.vae.encode(x).latent_dist.sample(generator=generator) for x in images.split(1)])
+         image_latents = (image_latents - self.vae.config.shift_factor) * self.vae.config.scaling_factor
+         image_latents = rearrange(image_latents, "f c h w -> 1 c f h w")
+         image_latents = torch.cat([image_latents] * 2) if do_classifier_free_guidance else image_latents
+@@ -254,8 +255,16 @@ class LipsyncPipeline(DiffusionPipeline):
+         boxes = []
+         affine_matrices = []
+         print(f"Affine transforming {len(video_frames)} faces...")
++        last = None
+         for frame in tqdm.tqdm(video_frames):
+-            face, box, affine_matrix = self.image_processor.affine_transform(frame)
++            try:
++                face, box, affine_matrix = self.image_processor.affine_transform(frame)
++                last = (face, box, affine_matrix)
++            except RuntimeError:
++                if last is None:
++                    raise
++                print("face not detected, reusing previous frame")
++                face, box, affine_matrix = last
+             faces.append(face)
+             boxes.append(box)
+             affine_matrices.append(affine_matrix)
+@@ -339,7 +348,7 @@ class LipsyncPipeline(DiffusionPipeline):
+         # 0. Define call parameters
+         device = self._execution_device
+         mask_image = load_fixed_mask(height, mask_image_path)
+-        self.image_processor = ImageProcessor(height, device="cuda", mask_image=mask_image)
++        self.image_processor = ImageProcessor(height, device=str(device), mask_image=mask_image)
+         self.set_progress_bar_config(desc=f"Sample frames: {num_frames}")
+ 
+         # 1. Default height and width to unet
+@@ -473,5 +482,5 @@ class LipsyncPipeline(DiffusionPipeline):
+ 
+         sf.write(os.path.join(temp_dir, "audio.wav"), audio_samples, audio_sample_rate)
+ 
+-        command = f"ffmpeg -y -loglevel error -nostdin -i {os.path.join(temp_dir, 'video.mp4')} -i {os.path.join(temp_dir, 'audio.wav')} -c:v libx264 -crf 18 -c:a aac -q:v 0 -q:a 0 {video_out_path}"
++        command = f"ffmpeg -y -loglevel error -nostdin -i {os.path.join(temp_dir, 'video.mp4')} -i {os.path.join(temp_dir, 'audio.wav')} -c:v copy -c:a aac -b:a 192k {video_out_path}"
+         subprocess.run(command, shell=True)
+diff --git a/latentsync/utils/face_detector.py b/latentsync/utils/face_detector.py
+index faa55c9..922515e 100644
+--- a/latentsync/utils/face_detector.py
++++ b/latentsync/utils/face_detector.py
+@@ -10,9 +10,9 @@ class FaceDetector:
+         self.app = FaceAnalysis(
+             allowed_modules=["detection", "landmark_2d_106"],
+             root="checkpoints/auxiliary",
+-            providers=["CUDAExecutionProvider"],
++            providers=["CUDAExecutionProvider"] if str(device).startswith("cuda") else ["CPUExecutionProvider"],
+         )
+-        self.app.prepare(ctx_id=cuda_to_int(device), det_size=(INSIGHTFACE_DETECT_SIZE, INSIGHTFACE_DETECT_SIZE))
++        self.app.prepare(ctx_id=cuda_to_int(device) if str(device).startswith("cuda") else -1, det_size=(INSIGHTFACE_DETECT_SIZE, INSIGHTFACE_DETECT_SIZE))
+ 
+     def __call__(self, frame, threshold=0.5):
+         f_h, f_w, _ = frame.shape
+diff --git a/latentsync/utils/image_processor.py b/latentsync/utils/image_processor.py
+index 5ac9f4e..6b31eee 100644
+--- a/latentsync/utils/image_processor.py
++++ b/latentsync/utils/image_processor.py
+@@ -39,17 +39,14 @@ class ImageProcessor:
+         )
+         self.normalize = transforms.Normalize([0.5], [0.5], inplace=True)
+ 
+-        self.restorer = AlignRestore(resolution=resolution, device=device)
++        self.restorer = AlignRestore(resolution=resolution, device=device, dtype=torch.float16 if str(device).startswith("cuda") else torch.float32)
+ 
+         if mask_image is None:
+             self.mask_image = load_fixed_mask(resolution)
+         else:
+             self.mask_image = mask_image
+ 
+-        if device == "cpu":
+-            self.face_detector = None
+-        else:
+-            self.face_detector = FaceDetector(device=device)
++        self.face_detector = FaceDetector(device=device)
+ 
+     def affine_transform(self, image: torch.Tensor) -> np.ndarray:
+         if self.face_detector is None:
+diff --git a/latentsync/utils/util.py b/latentsync/utils/util.py
+index 6aa9ab3..c9c558a 100644
+--- a/latentsync/utils/util.py
++++ b/latentsync/utils/util.py
+@@ -50,7 +50,7 @@ def read_video(video_path: str, change_fps=True, use_decord=True):
+             shutil.rmtree(temp_dir)
+         os.makedirs(temp_dir, exist_ok=True)
+         command = (
+-            f"ffmpeg -loglevel error -y -nostdin -i {video_path} -r 25 -crf 18 {os.path.join(temp_dir, 'video.mp4')}"
++            f"ffmpeg -loglevel error -y -nostdin -i {video_path} -r 25 -crf 10 {os.path.join(temp_dir, 'video.mp4')}"
+         )
+         subprocess.run(command, shell=True)
+         target_video_path = os.path.join(temp_dir, "video.mp4")
+@@ -118,7 +118,7 @@ def write_video(video_output_path: str, video_frames: np.ndarray, fps: int):
+         fps=fps,
+         codec="libx264",
+         macro_block_size=None,
+-        ffmpeg_params=["-crf", "13"],
++        ffmpeg_params=["-crf", "10"],
+         ffmpeg_log_level="error",
+     ) as writer:
+         for video_frame in video_frames:
+diff --git a/scripts/inference.py b/scripts/inference.py
+index ae2ff67..83dc1d8 100644
+--- a/scripts/inference.py
++++ b/scripts/inference.py
+@@ -49,12 +49,14 @@ def main(config, args):
+ 
+     audio_encoder = Audio2Feature(
+         model_path=whisper_model_path,
+-        device="cuda",
++        device="cuda" if torch.cuda.is_available() else "cpu",
+         num_frames=config.data.num_frames,
+         audio_feat_length=config.data.audio_feat_length,
+     )
+ 
+     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=dtype)
++    # במעבד, בלי GPU: מקודדים ומפענחים פריים אחד בכל פעם כדי לא לחרוג מהזיכרון (התוצאה זהה)
++    vae.enable_slicing()
+     vae.config.scaling_factor = 0.18215
+     vae.config.shift_factor = 0
+ 
+@@ -71,7 +73,7 @@ def main(config, args):
+         audio_encoder=audio_encoder,
+         unet=unet,
+         scheduler=scheduler,
+-    ).to("cuda")
++    ).to("cuda" if torch.cuda.is_available() else "cpu")
+ 
+     # use DeepCache
+     if args.enable_deepcache:
