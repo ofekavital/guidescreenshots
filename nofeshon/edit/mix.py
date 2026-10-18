@@ -11,6 +11,7 @@
   audio/music_main.*  הפסקול הראשי — כנ"ל
   audio/vo/*.wav      קריינות; שם הקובץ <segId>@<offset>.wav ממקם אותה על השוט
   audio/sfx/*.wav     אפקטים; אותה מוסכמת שמות
+  (שתי התיקיות נבנות מ־audio_cues.json על ידי place_audio.py)
 המוזיקה מונמכת אוטומטית (sidechain) מתחת לדיאלוג ולקריינות, והמיקס מנורמל ל־‎-16 LUFS.
 """
 import glob, json, os, subprocess, sys
