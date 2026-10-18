@@ -12,18 +12,19 @@ window.CUES = [
   { type: 'flash', seg: '03', at: -0.1, dur: 0.5, strength: 0.85 },
 
   /* ---------- הבשורה ---------- */
-  { type: 'notify', seg: '04-05', at: 0.25, dur: 3.9, pos: { left: 100, top: 56 },
-    // ‏U+200F סוגר את הרצף הלטיני של ON, אחרת "2026" קופץ לצד הלא נכון
-    title: 'נופשON‏ 2026 — ההרשמה נפתחה! 🎉', body: 'בארץ ובחו״ל, בקיץ ובחורף. בוחרים עכשיו.' },
+  // הנוסחים של ההודעות מ־NofeshON_Walking_Overlays (Messages.json), בעיצוב של הסרט
+  { type: 'notify', seg: '04-05', at: 0.25, dur: 3.9, pos: { left: 100, top: 56 }, title: 'אבי, נופשON מחכה לך!' },
   { type: 'title', seg: '06', at: 0.25, dur: 3.3, lines: ['מגיעים לכל עובד', '~בכל מקום'], scrim: 'br', pos: { right: 110, bottom: 110 } },
   { type: 'bubble', seg: '09', at: 0.4, dur: 2.7, text: 'נסגור טיסה ביחד? ✈️', origin: '0% 100%', pos: { left: 620, top: 120 } },
+  { type: 'caption', seg: '08', at: 0.5, dur: 3.6, text: '״מאמי, תתחילי לארוז, קיבלנו נופשון!״', rate: 0.2, pos: { left: 0, bottom: 80 } },
   { type: 'split', seg: '10-11', right: 'נועה', left: 'מיכל' },
   { type: 'title', seg: '10-11', at: 0.85, dur: 2.9, lines: ['בוחרים עם מי'], align: 'center', scrim: 'center', pos: { left: 0, right: 0, top: 380 } },
-  { type: 'notify', seg: '12b', at: 0.05, dur: 1.85, from: [1290, 590], pos: { left: 420, top: 250 },
-    title: 'הזמנה: נופש לצוות ולמשפחות 🌊', body: 'נופש משותף בכנרת. מצטרפים?' },
-  { type: 'bubble', seg: '13', at: 0.45, dur: 2.25, text: 'אנחנו בפנים! 🙌', sent: true, origin: '100% 100%', pos: { right: 200, top: 230 } },
-  { type: 'notify', seg: '14b', at: 0.35, dur: 3.75, pos: { right: 100, top: 64 },
-    title: 'הזכאות שלך לנופש הוארכה 💛', body: 'תודה על השירות במילואים. הנופש מחכה לך.' },
+  // ההודעה לגיל נכנסת כשהוא מסתכל בטלפון ונשארת עד התשובה; נכנסת מימין, היוצאת משמאל (כמו בוואטסאפ בעברית)
+  { type: 'bubble', seg: '12', at: 0.3, until: '13', untilAt: -0.05, wrap: true, origin: '100% 0%', pos: { right: 110, top: 70 },
+    text: 'גיל, סוגרים נופשON עם הצוות והמשפחות. מצטרפים?' },
+  { type: 'bubble', seg: '13', at: 0.45, untilAt: -0.05, until: '13', text: 'אנחנו בפנים!', sent: true, wrap: true, origin: '0% 0%', pos: { right: 420, top: 240 } },
+  { type: 'notify', seg: '14', at: 3.5, dur: 4.3, width: 700, pos: { right: 100, top: 64 },
+    title: 'למשרתי ומשרתות המילואים:', body: 'הזכאות לנופשון לשנים 2025 ו־2026 הוארכה למימוש עד 2028.' },
 
   /* ---------- קבוצות ה־WhatsApp ---------- */
   { type: 'push', seg: '15', at: 0, dur: 8, from: 0.8, to: 0.84, y: 70, feather: '80% 85% at 50% 50%', fill: '#05261a' },
@@ -39,8 +40,8 @@ window.CUES = [
   { type: 'chip', seg: '21', at: 0.2, dur: 2.15, icon: 'couple', main: 'בזוג', sub: 'רמת הגולן', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '22', at: 0.2, dur: 1.5, icon: 'family', main: 'אמא ובת', sub: 'חיפה', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '22', at: 1.65, dur: 1.55, icon: 'gift', main: 'שי מחכה לכם במלון', pos: { right: 90, bottom: 84 } },
-  { type: 'notify', seg: '23', at: 0.2, dur: 2.75, pos: { right: 100, top: 64 }, appIcon: 'gift',
-    title: 'קיבלת שובר BUYME 🎁', body: 'מתנה מחברת החשמל. תיהנו מהנופש!' },
+  { type: 'notify', seg: '23', at: 0.15, dur: 4.25, width: 720, pos: { right: 100, top: 64 }, appIcon: 'gift',
+    title: 'חברת החשמל החליטה לפנק אותך במתנה ☺', body: 'קיבלת גיפט קארד בשווי <b>250 ש״ח</b> ב־BUYME ALL, מתנה מ־mona tours.', note: 'בתוקף עד 19/12/2029.' },
 
   /* ---------- בחו״ל: הדרך ---------- */
   { type: 'chip', seg: '23.5', at: 0.3, dur: 3.0, icon: 'coffee', main: 'קפה וכריך בשדה, עלינו', sub: 'לטסים לחו״ל', subIcon: false, pos: { right: 90, bottom: 84 } },
@@ -54,11 +55,15 @@ window.CUES = [
     ] },
   { type: 'chip', seg: '27-28', at: 0.25, dur: 2.15, icon: 'snow', main: 'בקיץ או בחורף', pos: { right: 90, bottom: 84 } },
   { type: 'chip', seg: '29', at: 0.35, until: '29b', untilAt: -0.1, icon: 'friends', main: 'עם חברות מהעבודה', sub: 'תאילנד', pos: { right: 90, bottom: 84 } },
-  { type: 'chip', seg: '30', at: 0.3, dur: 3.35, icon: 'access', main: 'בזוג, עם הגעה נגישה', sub: 'יוון', pos: { right: 90, bottom: 84 } },
+  // יוון: הדגש הוא נגישות — נופש שמתאים באמת לכל אחד ולצרכים שלו
+  { type: 'title', seg: '30', at: 0.15, dur: 3.85, lines: ['נופש שמתאים', 'באמת לכל אחד'], scrim: 'top', pos: { right: 110, top: 70 } },
+  { type: 'chip', seg: '30', at: 0.8, dur: 3.2, icon: 'access', main: 'נגישות ומענה לצרכים מיוחדים', sub: 'יוון', pos: { right: 90, bottom: 84 } },
 
   /* ---------- חוויות ---------- */
   { type: 'leak', seg: '32', at: -0.35, dur: 1.0, strength: 0.6 },
-  { type: 'title', seg: '32', at: 0.2, until: '33b', untilAt: -0.2, lines: ['נופשים ומחזקים', 'את ישראל'], scrim: 'top', pos: { right: 110, top: 70 } },
+  // כותרת הפרק פותחת את המונטאז', ואז נשארת ככותרת קטנה למעלה כדי שלכל אטרקציה יהיה הקשר
+  { type: 'title', seg: '32', at: 0.2, until: '33b', untilAt: -0.2, lines: ['מגוון אטרקציות', 'וחוויות'], scrim: 'top', pos: { right: 110, top: 70 } },
+  { type: 'chip', seg: '37', at: 0.0, until: '35', untilAt: -0.05, icon: 'star', main: 'מגוון אטרקציות וחוויות', pos: { right: 90, top: 64 } },
   { type: 'label', seg: '32', at: 0.5, dur: 2.4, text: 'קיאקים בצפון', scrim: false, pos: { right: 110, bottom: 90 } },
   { type: 'label', seg: '33', at: 0.15, until: '33b', untilAt: -0.1, text: 'טיולי שטח', scrim: false, pos: { right: 110, bottom: 90 } },
   { type: 'label', seg: '37', at: 0.15, dur: 3.3, text: 'חוות אלפקות', pos: { right: 110, bottom: 90 } },
@@ -67,10 +72,17 @@ window.CUES = [
   { type: 'label', seg: '36', at: 0.15, dur: 3.15, text: 'סיור מודרך', loc: 'וינה', pos: { right: 110, bottom: 90 } },
   { type: 'label', seg: '35', at: 0.15, dur: 2.65, text: 'ספא ופינוק', pos: { right: 110, bottom: 90 } },
   { type: 'label', seg: '38', at: 0.1, dur: 1.3, text: 'מופע WOW', loc: 'אילת', pos: { right: 110, bottom: 90 } },
-  { type: 'title', seg: '38b', at: 0.1, dur: 2.3, lines: ['חוויה לכל אחד'], align: 'center', scrim: 'center', pos: { left: 0, right: 0, top: 420 } },
+  { type: 'title', seg: '38b', at: 0.1, dur: 2.9, lines: ['נופשים ומחזקים', 'את ישראל'], align: 'center', scrim: 'center', pos: { left: 0, right: 0, top: 340 } },
 
   /* ---------- סיום ---------- */
   { type: 'leak', seg: '40', at: -0.35, dur: 1.0, strength: 0.55 },
+  // הודעת המשוב: תצוגה מקדימה קופצת מהטלפון כשהמסך נדלק על השולחן (40), וההודעה המלאה ליד הטלפון בזמן הדפדוף (41)
+  { type: 'notify', seg: '40', at: 2.25, until: '40', untilAt: 0.05, from: [1050, 850], width: 600, pos: { left: 150, top: 590 },
+    app: 'נופשON · משאבי אנוש', title: 'שלום לכולם,', body: 'אנו מקווים שנהניתם בנופשון, אנו בחטיבת משאבי אנוש…' },
+  { type: 'notify', seg: '41', at: 0.15, dur: 6.4, width: 760, pos: { right: 90, top: 130 }, app: 'נופשON · משאבי אנוש',
+    title: 'שלום לכולם,',
+    body: 'אנו מקווים שנהניתם בנופשון, אנו בחטיבת משאבי אנוש בכל סוף נופשון מעבירים משוב קצר לקבל רשמים שלכם, נודה לכם אם תמלאו את המשוב (מצרף קישור), תודה סמדר ואבי, חטיבת משאבי אנוש.',
+    link: 'https://forms.office.com/r/ZvtjfZ6kcK' },
   { type: 'survey', seg: '42', at: 0.0, dur: 2.5, pos: { right: 150, top: 200 }, q: 'איך היה הנופש?', thanks: 'החוויה שלכם משפיעה<br>על הנופשונים הבאים' },
   { type: 'caption', seg: '44', at: 0.3, dur: 2.45, who: 'רוני', text: '״מוטי, אני בחופשה. אחזור אליך.״', rate: 0.22, pos: { left: 0, bottom: 80 } },
   { type: 'endcard', seg: '46', at: 0, dur: 4.5, tag: 'החופשה שלכם. הבחירה שלכם.' },

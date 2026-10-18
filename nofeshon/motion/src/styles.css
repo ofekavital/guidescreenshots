@@ -68,11 +68,16 @@ body { font-family: 'Rubik', 'Noto Color Emoji', sans-serif; -webkit-font-smooth
 .notify .time { margin-inline-start: auto; font-size: 23px; color: #8a8e99; }
 .notify .tt { font-weight: 700; font-size: 33px; line-height: 1.18; }
 .notify .bd { font-weight: 400; font-size: 28px; line-height: 1.3; color: #343846; margin-top: 4px; }
+.notify .tt + .bd { margin-top: 6px; }
+.notify .bd b { font-weight: 700; color: #10131c; }
+.notify .note { font-size: 23px; color: #8a8e99; margin-top: 10px; }
+.notify .link { font-size: 23px; color: #027eb5; margin-top: 12px; direction: ltr; text-align: left; }
 
 /* ---------- בועת צ'אט ---------- */
 .bubble { padding: 18px 30px 20px; border-radius: 34px; font-weight: 700; font-size: 48px; color: #10131c; white-space: nowrap;
   background: #fff; box-shadow: 0 22px 60px rgba(0, 0, 0, 0.3); }
 .bubble.sent { background: #d9fdd3; }
+.bubble.wrap { white-space: normal; max-width: 760px; font-size: 40px; font-weight: 600; line-height: 1.32; padding: 20px 32px 22px; }
 .bubble .meta { display: inline-flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 400; color: #667781; margin-inline-start: 18px; vertical-align: -2px; }
 .bubble .meta svg { width: 30px; height: 22px; fill: none; stroke: #53bdeb; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .bubble .tail { position: absolute; bottom: -2px; width: 34px; height: 34px; }

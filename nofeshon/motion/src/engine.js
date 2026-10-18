@@ -98,9 +98,15 @@
     notify(c) {
       const w = wrap(c, 4);
       const ic = c.appIcon ? icon(c.appIcon) : appIcon;
-      w.innerHTML = `<div class="notify"><div class="hd"><div class="app">${ic}</div><div class="name">${c.app || 'נופשON'}</div><div class="time">עכשיו</div></div><div class="tt">${c.title}</div><div class="bd">${c.body}</div></div>`;
+      const width = c.width || 640;
+      w.innerHTML = `<div class="notify" style="width:${width}px"><div class="hd"><div class="app">${ic}</div><div class="name">${c.app || 'נופשON'}</div><div class="time">עכשיו</div></div>`
+        + (c.title ? `<div class="tt">${c.title}</div>` : '')
+        + (c.body ? `<div class="bd">${c.body}</div>` : '')
+        + (c.note ? `<div class="note">${c.note}</div>` : '')
+        + (c.link ? `<div class="link">${c.link}</div>` : '')
+        + '</div>';
       const n = w.firstChild;
-      if (c.from) n.style.transformOrigin = `${c.from[0] - (c.pos.left ?? 1920 - c.pos.right - 640)}px ${c.from[1] - c.pos.top}px`;
+      if (c.from) n.style.transformOrigin = `${c.from[0] - (c.pos.left ?? 1920 - c.pos.right - width)}px ${c.from[1] - c.pos.top}px`;
       return {
         el: w,
         update(lt, dur) {
@@ -121,7 +127,7 @@
     bubble(c) {
       const w = wrap(c, 4);
       const meta = c.sent ? `<span class="meta">${icon('check2')}</span>` : '';
-      w.innerHTML = `<div class="bubble ${c.sent ? 'sent' : ''}">${c.text}${meta}</div>`;
+      w.innerHTML = `<div class="bubble ${c.sent ? 'sent' : ''} ${c.wrap ? 'wrap' : ''}">${c.text}${meta}</div>`;
       const bub = w.firstChild;
       bub.style.transformOrigin = c.origin || '100% 100%';
       return {
@@ -211,13 +217,13 @@
 
     caption(c) {
       const w = wrap(c, 4);
-      w.innerHTML = `<div class="caption"><span class="who">${c.who}</span>${words(c.text)}</div>`;
+      w.innerHTML = `<div class="caption">${c.who ? `<span class="who">${c.who}</span>` : ''}${words(c.text)}</div>`;
       const ws = [...w.querySelectorAll('.w > span')], who = w.querySelector('.who');
       return {
         el: w,
         update(lt, dur) {
           const b = E.inCubic(P(lt, dur - 0.3, 0.3));
-          who.style.opacity = P(lt, 0, 0.25) * (1 - b);
+          if (who) who.style.opacity = P(lt, 0, 0.25) * (1 - b);
           ws.forEach((s, i) => {
             const k = E.outCubic(P(lt, (c.times ? c.times[i] : i * (c.rate || 0.26)), 0.3));
             s.style.opacity = k * (1 - b);
@@ -430,6 +436,8 @@
       }
       return TL.segments[lo];
     };
+    // טוענים מראש את כל המשקלים: גופן שנטען רק בשימוש הראשון מצייר טקסט ריק בפריימים הראשונים
+    await Promise.all([...document.fonts].map((f) => f.load().catch(() => {})));
     await document.fonts.ready;
     await Promise.all([...document.images].map((im) => im.decode().catch(() => {})));
   })();
