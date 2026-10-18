@@ -2,8 +2,8 @@
  "fps": 24,
  "width": 1920,
  "height": 1080,
- "duration": 186.79166666666666,
- "frames": 4483,
+ "duration": 188.79166666666666,
+ "frames": 4531,
  "segments": [
   {
    "id": "01a",
@@ -14,7 +14,7 @@
    "out": 10.2,
    "audio": true,
    "note": "ההרצאה — מוטי מדבר, רוני משועמם",
-   "file": "/home/user/footage/work/segs/000_01a.mp4",
+   "file": "/home/user/footage/work/segs/01a.mp4",
    "start": 0.0,
    "end": 10.208333333333334,
    "startFrame": 0,
@@ -29,7 +29,7 @@
    "out": 17.4,
    "audio": true,
    "note": "מוטי",
-   "file": "/home/user/footage/work/segs/001_01b.mp4",
+   "file": "/home/user/footage/work/segs/01b.mp4",
    "start": 10.208333333333334,
    "end": 12.625,
    "startFrame": 245,
@@ -44,7 +44,7 @@
    "out": 27.2,
    "audio": true,
    "note": "שוט רחב של האולם הריק",
-   "file": "/home/user/footage/work/segs/002_01c.mp4",
+   "file": "/home/user/footage/work/segs/01c.mp4",
    "start": 12.625,
    "end": 17.541666666666668,
    "startFrame": 303,
@@ -59,7 +59,7 @@
    "out": 39.5,
    "audio": true,
    "note": "רוני נרדם",
-   "file": "/home/user/footage/work/segs/003_01d.mp4",
+   "file": "/home/user/footage/work/segs/01d.mp4",
    "start": 17.541666666666668,
    "end": 24.041666666666668,
    "startFrame": 421,
@@ -71,13 +71,13 @@
    "scene": "02",
    "src": "2.mp4",
    "in": 0.0,
-   "out": 4.4,
+   "out": 5.4,
    "note": "השעון 2017 ← 2026",
-   "file": "/home/user/footage/work/segs/004_02.mp4",
+   "file": "/home/user/footage/work/segs/02.mp4",
    "start": 24.041666666666668,
-   "end": 28.458333333333332,
+   "end": 29.458333333333332,
    "startFrame": 577,
-   "frames": 106
+   "frames": 130
   },
   {
    "id": "03",
@@ -87,10 +87,10 @@
    "in": 0.4,
    "out": 2.4,
    "note": "אבי במנוף",
-   "file": "/home/user/footage/work/segs/005_03.mp4",
-   "start": 28.458333333333332,
-   "end": 30.458333333333332,
-   "startFrame": 683,
+   "file": "/home/user/footage/work/segs/03.mp4",
+   "start": 29.458333333333332,
+   "end": 31.458333333333332,
+   "startFrame": 707,
    "frames": 48
   },
   {
@@ -101,10 +101,10 @@
    "in": 7.6,
    "out": 9.2,
    "note": "מסיר כפפות",
-   "file": "/home/user/footage/work/segs/006_03b.mp4",
-   "start": 30.458333333333332,
-   "end": 32.041666666666664,
-   "startFrame": 731,
+   "file": "/home/user/footage/work/segs/03b.mp4",
+   "start": 31.458333333333332,
+   "end": 33.041666666666664,
+   "startFrame": 755,
    "frames": 38
   },
   {
@@ -115,10 +115,10 @@
    "in": 10.0,
    "out": 14.6,
    "note": "קורא, מכריז, העמיתים מצטרפים",
-   "file": "/home/user/footage/work/segs/007_04-05.mp4",
-   "start": 32.041666666666664,
-   "end": 36.625,
-   "startFrame": 769,
+   "file": "/home/user/footage/work/segs/04-05.mp4",
+   "start": 33.041666666666664,
+   "end": 37.625,
+   "startFrame": 793,
    "frames": 110
   },
   {
@@ -129,10 +129,10 @@
    "in": 0.3,
    "out": 3.9,
    "note": "הצולל",
-   "file": "/home/user/footage/work/segs/008_06.mp4",
-   "start": 36.625,
-   "end": 40.208333333333336,
-   "startFrame": 879,
+   "file": "/home/user/footage/work/segs/06.mp4",
+   "start": 37.625,
+   "end": 41.208333333333336,
+   "startFrame": 903,
    "frames": 86
   },
   {
@@ -143,10 +143,10 @@
    "in": 0.0,
    "out": 2.2,
    "note": "הבשורה בין חברות המשרד",
-   "file": "/home/user/footage/work/segs/009_07.mp4",
-   "start": 40.208333333333336,
-   "end": 42.416666666666664,
-   "startFrame": 965,
+   "file": "/home/user/footage/work/segs/07.mp4",
+   "start": 41.208333333333336,
+   "end": 43.416666666666664,
+   "startFrame": 989,
    "frames": 53
   },
   {
@@ -157,10 +157,10 @@
    "in": 0.6,
    "out": 3.8,
    "note": "מתקשר לאשתו",
-   "file": "/home/user/footage/work/segs/010_08.mp4",
-   "start": 42.416666666666664,
-   "end": 45.625,
-   "startFrame": 1018,
+   "file": "/home/user/footage/work/segs/08.mp4",
+   "start": 43.416666666666664,
+   "end": 46.625,
+   "startFrame": 1042,
    "frames": 77
   },
   {
@@ -171,10 +171,10 @@
    "in": 2.3,
    "out": 5.6,
    "note": "״נסגור טיסה ביחד?״",
-   "file": "/home/user/footage/work/segs/011_09.mp4",
-   "start": 45.625,
-   "end": 48.916666666666664,
-   "startFrame": 1095,
+   "file": "/home/user/footage/work/segs/09.mp4",
+   "start": 46.625,
+   "end": 49.916666666666664,
+   "startFrame": 1119,
    "frames": 79
   },
   {
@@ -192,10 +192,10 @@
    },
    "dur": 3.8,
    "note": "נועה ומיכל — מסך מפוצל",
-   "file": "/home/user/footage/work/segs/012_10-11.mp4",
-   "start": 48.916666666666664,
-   "end": 52.708333333333336,
-   "startFrame": 1174,
+   "file": "/home/user/footage/work/segs/10-11.mp4",
+   "start": 49.916666666666664,
+   "end": 53.708333333333336,
+   "startFrame": 1198,
    "frames": 91
   },
   {
@@ -206,10 +206,10 @@
    "in": 0.4,
    "out": 1.9,
    "note": "גיל קורא את ההזמנה",
-   "file": "/home/user/footage/work/segs/013_12.mp4",
-   "start": 52.708333333333336,
-   "end": 54.208333333333336,
-   "startFrame": 1265,
+   "file": "/home/user/footage/work/segs/12.mp4",
+   "start": 53.708333333333336,
+   "end": 55.208333333333336,
+   "startFrame": 1289,
    "frames": 36
   },
   {
@@ -220,10 +220,10 @@
    "in": 2.0,
    "out": 3.9,
    "note": "מבט על הטלפון — שכבת הזמנה",
-   "file": "/home/user/footage/work/segs/014_12b.mp4",
-   "start": 54.208333333333336,
-   "end": 56.125,
-   "startFrame": 1301,
+   "file": "/home/user/footage/work/segs/12b.mp4",
+   "start": 55.208333333333336,
+   "end": 57.125,
+   "startFrame": 1325,
    "frames": 46
   },
   {
@@ -234,10 +234,10 @@
    "in": 4.6,
    "out": 7.4,
    "note": "״אנחנו בפנים!״",
-   "file": "/home/user/footage/work/segs/015_13.mp4",
-   "start": 56.125,
-   "end": 58.916666666666664,
-   "startFrame": 1347,
+   "file": "/home/user/footage/work/segs/13.mp4",
+   "start": 57.125,
+   "end": 59.916666666666664,
+   "startFrame": 1371,
    "frames": 67
   },
   {
@@ -248,10 +248,10 @@
    "in": 0.0,
    "out": 1.9,
    "note": "המילואימניק מסיר קסדה",
-   "file": "/home/user/footage/work/segs/016_14.mp4",
-   "start": 58.916666666666664,
-   "end": 60.833333333333336,
-   "startFrame": 1414,
+   "file": "/home/user/footage/work/segs/14.mp4",
+   "start": 59.916666666666664,
+   "end": 61.833333333333336,
+   "startFrame": 1438,
    "frames": 46
   },
   {
@@ -262,10 +262,10 @@
    "in": 3.4,
    "out": 7.6,
    "note": "קורא את הודעת הארכת הזכאות",
-   "file": "/home/user/footage/work/segs/017_14b.mp4",
-   "start": 60.833333333333336,
-   "end": 65.04166666666667,
-   "startFrame": 1460,
+   "file": "/home/user/footage/work/segs/14b.mp4",
+   "start": 61.833333333333336,
+   "end": 66.04166666666667,
+   "startFrame": 1484,
    "frames": 101
   },
   {
@@ -276,10 +276,10 @@
    "in": 4.5,
    "out": 12.5,
    "note": "קבוצות ה־WhatsApp",
-   "file": "/home/user/footage/work/segs/018_15.mp4",
-   "start": 65.04166666666667,
-   "end": 73.04166666666667,
-   "startFrame": 1561,
+   "file": "/home/user/footage/work/segs/15.mp4",
+   "start": 66.04166666666667,
+   "end": 74.04166666666667,
+   "startFrame": 1585,
    "frames": 192
   },
   {
@@ -290,10 +290,10 @@
    "in": 0.0,
    "out": 3.8,
    "note": "גיל ומשפחתו בכנרת",
-   "file": "/home/user/footage/work/segs/019_16.mp4",
-   "start": 73.04166666666667,
-   "end": 76.83333333333333,
-   "startFrame": 1753,
+   "file": "/home/user/footage/work/segs/16.mp4",
+   "start": 74.04166666666667,
+   "end": 77.83333333333333,
+   "startFrame": 1777,
    "frames": 91
   },
   {
@@ -304,10 +304,10 @@
    "in": 2.4,
    "out": 6.9,
    "note": "המפגש בלובי",
-   "file": "/home/user/footage/work/segs/020_17.mp4",
-   "start": 76.83333333333333,
-   "end": 81.33333333333333,
-   "startFrame": 1844,
+   "file": "/home/user/footage/work/segs/17.mp4",
+   "start": 77.83333333333333,
+   "end": 82.33333333333333,
+   "startFrame": 1868,
    "frames": 108
   },
   {
@@ -318,10 +318,10 @@
    "in": 2.3,
    "out": 5.9,
    "note": "נועה ומיכל בגליל",
-   "file": "/home/user/footage/work/segs/021_18.mp4",
-   "start": 81.33333333333333,
-   "end": 84.91666666666667,
-   "startFrame": 1952,
+   "file": "/home/user/footage/work/segs/18.mp4",
+   "start": 82.33333333333333,
+   "end": 85.91666666666667,
+   "startFrame": 1976,
    "frames": 86
   },
   {
@@ -332,10 +332,10 @@
    "in": 0.0,
    "out": 3.4,
    "note": "הנופש היחיד באילת",
-   "file": "/home/user/footage/work/segs/022_19.mp4",
-   "start": 84.91666666666667,
-   "end": 88.33333333333333,
-   "startFrame": 2038,
+   "file": "/home/user/footage/work/segs/19.mp4",
+   "start": 85.91666666666667,
+   "end": 89.33333333333333,
+   "startFrame": 2062,
    "frames": 82
   },
   {
@@ -346,10 +346,10 @@
    "in": 0.4,
    "out": 4.2,
    "note": "המשפחה החרדית",
-   "file": "/home/user/footage/work/segs/023_20.mp4",
-   "start": 88.33333333333333,
-   "end": 92.125,
-   "startFrame": 2120,
+   "file": "/home/user/footage/work/segs/20.mp4",
+   "start": 89.33333333333333,
+   "end": 93.125,
+   "startFrame": 2144,
    "frames": 91
   },
   {
@@ -360,10 +360,10 @@
    "in": 0.0,
    "out": 2.4,
    "note": "המילואימניק ובת זוגו בגולן (רק החלק במדים)",
-   "file": "/home/user/footage/work/segs/024_21.mp4",
-   "start": 92.125,
-   "end": 94.54166666666667,
-   "startFrame": 2211,
+   "file": "/home/user/footage/work/segs/21.mp4",
+   "start": 93.125,
+   "end": 95.54166666666667,
+   "startFrame": 2235,
    "frames": 58
   },
   {
@@ -374,10 +374,10 @@
    "in": 0.0,
    "out": 3.2,
    "note": "המתנה בחיפה",
-   "file": "/home/user/footage/work/segs/025_22.mp4",
-   "start": 94.54166666666667,
-   "end": 97.75,
-   "startFrame": 2269,
+   "file": "/home/user/footage/work/segs/22.mp4",
+   "start": 95.54166666666667,
+   "end": 98.75,
+   "startFrame": 2293,
    "frames": 77
   },
   {
@@ -388,10 +388,10 @@
    "in": 5.0,
    "out": 8.0,
    "note": "שובר BUYME בטלפון",
-   "file": "/home/user/footage/work/segs/026_23.mp4",
-   "start": 97.75,
-   "end": 100.75,
-   "startFrame": 2346,
+   "file": "/home/user/footage/work/segs/23.mp4",
+   "start": 98.75,
+   "end": 101.75,
+   "startFrame": 2370,
    "frames": 72
   },
   {
@@ -402,10 +402,10 @@
    "in": 0.4,
    "out": 3.8,
    "note": "קפה וכריך בשדה",
-   "file": "/home/user/footage/work/segs/027_23.5.mp4",
-   "start": 100.75,
-   "end": 104.16666666666667,
-   "startFrame": 2418,
+   "file": "/home/user/footage/work/segs/23.5.mp4",
+   "start": 101.75,
+   "end": 105.16666666666667,
+   "startFrame": 2442,
    "frames": 82
   },
   {
@@ -417,10 +417,10 @@
    "out": 7.4,
    "speed": 1.6,
    "note": "המטוס — המיתוגים מתחלפים",
-   "file": "/home/user/footage/work/segs/028_24a.mp4",
-   "start": 104.16666666666667,
-   "end": 108.79166666666667,
-   "startFrame": 2500,
+   "file": "/home/user/footage/work/segs/24a.mp4",
+   "start": 105.16666666666667,
+   "end": 109.79166666666667,
+   "startFrame": 2524,
    "frames": 111
   },
   {
@@ -432,10 +432,10 @@
    "out": 9.9,
    "speed": 1.3,
    "note": "כניסה לחלון",
-   "file": "/home/user/footage/work/segs/029_24b.mp4",
-   "start": 108.79166666666667,
-   "end": 110.70833333333333,
-   "startFrame": 2611,
+   "file": "/home/user/footage/work/segs/24b.mp4",
+   "start": 109.79166666666667,
+   "end": 111.70833333333333,
+   "startFrame": 2635,
    "frames": 46
   },
   {
@@ -446,10 +446,10 @@
    "in": 11.4,
    "out": 15.0,
    "note": "השוקולד לרוני",
-   "file": "/home/user/footage/work/segs/030_24c.mp4",
-   "start": 110.70833333333333,
-   "end": 114.29166666666667,
-   "startFrame": 2657,
+   "file": "/home/user/footage/work/segs/24c.mp4",
+   "start": 111.70833333333333,
+   "end": 115.29166666666667,
+   "startFrame": 2681,
    "frames": 86
   },
   {
@@ -460,10 +460,10 @@
    "in": 0.0,
    "out": 2.4,
    "note": "עלייה להסעה",
-   "file": "/home/user/footage/work/segs/031_25.mp4",
-   "start": 114.29166666666667,
-   "end": 116.70833333333333,
-   "startFrame": 2743,
+   "file": "/home/user/footage/work/segs/25.mp4",
+   "start": 115.29166666666667,
+   "end": 117.70833333333333,
+   "startFrame": 2767,
    "frames": 58
   },
   {
@@ -474,10 +474,10 @@
    "in": 4.6,
    "out": 9.2,
    "note": "היכרות באוטובוס",
-   "file": "/home/user/footage/work/segs/032_26.mp4",
-   "start": 116.70833333333333,
-   "end": 121.29166666666667,
-   "startFrame": 2801,
+   "file": "/home/user/footage/work/segs/26.mp4",
+   "start": 117.70833333333333,
+   "end": 122.29166666666667,
+   "startFrame": 2825,
    "frames": 110
   },
   {
@@ -488,10 +488,10 @@
    "in": 12.5,
    "out": 15.0,
    "note": "הליכה אל המלון",
-   "file": "/home/user/footage/work/segs/033_27-28.mp4",
-   "start": 121.29166666666667,
-   "end": 123.79166666666667,
-   "startFrame": 2911,
+   "file": "/home/user/footage/work/segs/27-28.mp4",
+   "start": 122.29166666666667,
+   "end": 124.79166666666667,
+   "startFrame": 2935,
    "frames": 60
   },
   {
@@ -502,10 +502,10 @@
    "in": 0.0,
    "out": 2.5,
    "note": "תאילנד — הגעה",
-   "file": "/home/user/footage/work/segs/034_29.mp4",
-   "start": 123.79166666666667,
-   "end": 126.29166666666667,
-   "startFrame": 2971,
+   "file": "/home/user/footage/work/segs/29.mp4",
+   "start": 124.79166666666667,
+   "end": 127.29166666666667,
+   "startFrame": 2995,
    "frames": 60
   },
   {
@@ -516,10 +516,10 @@
    "in": 2.7,
    "out": 4.9,
    "note": "תאילנד — סלפי",
-   "file": "/home/user/footage/work/segs/035_29b.mp4",
-   "start": 126.29166666666667,
-   "end": 128.5,
-   "startFrame": 3031,
+   "file": "/home/user/footage/work/segs/29b.mp4",
+   "start": 127.29166666666667,
+   "end": 129.5,
+   "startFrame": 3055,
    "frames": 53
   },
   {
@@ -530,10 +530,10 @@
    "in": 0.0,
    "out": 3.8,
    "note": "יוון — הגעה נגישה",
-   "file": "/home/user/footage/work/segs/036_30.mp4",
-   "start": 128.5,
-   "end": 132.29166666666666,
-   "startFrame": 3084,
+   "file": "/home/user/footage/work/segs/30.mp4",
+   "start": 129.5,
+   "end": 133.29166666666666,
+   "startFrame": 3108,
    "frames": 91
   },
   {
@@ -544,10 +544,10 @@
    "in": 0.0,
    "out": 3.0,
    "note": "קיאקים בצפון",
-   "file": "/home/user/footage/work/segs/037_32.mp4",
-   "start": 132.29166666666666,
-   "end": 135.29166666666666,
-   "startFrame": 3175,
+   "file": "/home/user/footage/work/segs/32.mp4",
+   "start": 133.29166666666666,
+   "end": 136.29166666666666,
+   "startFrame": 3199,
    "frames": 72
   },
   {
@@ -558,10 +558,10 @@
    "in": 0.0,
    "out": 2.0,
    "note": "טיול שטח — רחפן",
-   "file": "/home/user/footage/work/segs/038_33.mp4",
-   "start": 135.29166666666666,
-   "end": 137.29166666666666,
-   "startFrame": 3247,
+   "file": "/home/user/footage/work/segs/33.mp4",
+   "start": 136.29166666666666,
+   "end": 138.29166666666666,
+   "startFrame": 3271,
    "frames": 48
   },
   {
@@ -572,10 +572,10 @@
    "in": 3.4,
    "out": 5.6,
    "note": "טיול שטח — ברכב",
-   "file": "/home/user/footage/work/segs/039_33b.mp4",
-   "start": 137.29166666666666,
-   "end": 139.5,
-   "startFrame": 3295,
+   "file": "/home/user/footage/work/segs/33b.mp4",
+   "start": 138.29166666666666,
+   "end": 140.5,
+   "startFrame": 3319,
    "frames": 53
   },
   {
@@ -586,10 +586,10 @@
    "in": 0.8,
    "out": 4.4,
    "note": "חוות האלפקות",
-   "file": "/home/user/footage/work/segs/040_37.mp4",
-   "start": 139.5,
-   "end": 143.08333333333334,
-   "startFrame": 3348,
+   "file": "/home/user/footage/work/segs/37.mp4",
+   "start": 140.5,
+   "end": 144.08333333333334,
+   "startFrame": 3372,
    "frames": 86
   },
   {
@@ -600,10 +600,10 @@
    "in": 0.0,
    "out": 1.4,
    "note": "רכבל מנרה — חוץ",
-   "file": "/home/user/footage/work/segs/041_34.mp4",
-   "start": 143.08333333333334,
-   "end": 144.5,
-   "startFrame": 3434,
+   "file": "/home/user/footage/work/segs/34.mp4",
+   "start": 144.08333333333334,
+   "end": 145.5,
+   "startFrame": 3458,
    "frames": 34
   },
   {
@@ -614,10 +614,10 @@
    "in": 1.8,
    "out": 4.6,
    "note": "רכבל מנרה — פנים",
-   "file": "/home/user/footage/work/segs/042_34b.mp4",
-   "start": 144.5,
-   "end": 147.29166666666666,
-   "startFrame": 3468,
+   "file": "/home/user/footage/work/segs/34b.mp4",
+   "start": 145.5,
+   "end": 148.29166666666666,
+   "startFrame": 3492,
    "frames": 67
   },
   {
@@ -628,10 +628,10 @@
    "in": 0.0,
    "out": 3.4,
    "note": "השוק הצף בתאילנד",
-   "file": "/home/user/footage/work/segs/043_31.mp4",
-   "start": 147.29166666666666,
-   "end": 150.70833333333334,
-   "startFrame": 3535,
+   "file": "/home/user/footage/work/segs/31.mp4",
+   "start": 148.29166666666666,
+   "end": 151.70833333333334,
+   "startFrame": 3559,
    "frames": 82
   },
   {
@@ -642,10 +642,10 @@
    "in": 0.0,
    "out": 3.4,
    "note": "סיור מודרך בווינה",
-   "file": "/home/user/footage/work/segs/044_36.mp4",
-   "start": 150.70833333333334,
-   "end": 154.125,
-   "startFrame": 3617,
+   "file": "/home/user/footage/work/segs/36.mp4",
+   "start": 151.70833333333334,
+   "end": 155.125,
+   "startFrame": 3641,
    "frames": 82
   },
   {
@@ -656,10 +656,10 @@
    "in": 1.9,
    "out": 4.8,
    "note": "ספא",
-   "file": "/home/user/footage/work/segs/045_35.mp4",
-   "start": 154.125,
-   "end": 157.04166666666666,
-   "startFrame": 3699,
+   "file": "/home/user/footage/work/segs/35.mp4",
+   "start": 155.125,
+   "end": 158.04166666666666,
+   "startFrame": 3723,
    "frames": 70
   },
   {
@@ -670,10 +670,10 @@
    "in": 0.0,
    "out": 1.4,
    "note": "מופע WOW — במה",
-   "file": "/home/user/footage/work/segs/046_38.mp4",
-   "start": 157.04166666666666,
-   "end": 158.45833333333334,
-   "startFrame": 3769,
+   "file": "/home/user/footage/work/segs/38.mp4",
+   "start": 158.04166666666666,
+   "end": 159.45833333333334,
+   "startFrame": 3793,
    "frames": 34
   },
   {
@@ -684,10 +684,10 @@
    "in": 1.6,
    "out": 4.0,
    "note": "מופע WOW — קהל",
-   "file": "/home/user/footage/work/segs/047_38b.mp4",
-   "start": 158.45833333333334,
-   "end": 160.875,
-   "startFrame": 3803,
+   "file": "/home/user/footage/work/segs/38b.mp4",
+   "start": 159.45833333333334,
+   "end": 161.875,
+   "startFrame": 3827,
    "frames": 58
   },
   {
@@ -698,10 +698,10 @@
    "in": 0.0,
    "out": 4.4,
    "note": "רוני בריזורט, מבחין בטלפון",
-   "file": "/home/user/footage/work/segs/048_40.mp4",
-   "start": 160.875,
-   "end": 165.29166666666666,
-   "startFrame": 3861,
+   "file": "/home/user/footage/work/segs/40.mp4",
+   "start": 161.875,
+   "end": 166.29166666666666,
+   "startFrame": 3885,
    "frames": 106
   },
   {
@@ -713,10 +713,10 @@
    "out": 7.4,
    "speed": 1.5,
    "note": "דפדוף בתמונות",
-   "file": "/home/user/footage/work/segs/049_41.mp4",
-   "start": 165.29166666666666,
-   "end": 170.20833333333334,
-   "startFrame": 3967,
+   "file": "/home/user/footage/work/segs/41.mp4",
+   "start": 166.29166666666666,
+   "end": 171.20833333333334,
+   "startFrame": 3991,
    "frames": 118
   },
   {
@@ -726,12 +726,13 @@
    "src": "41.mov",
    "in": 7.4,
    "out": 8.9,
+   "speed": 0.6,
    "note": "הסקר — שכבת מושן",
-   "file": "/home/user/footage/work/segs/050_42.mp4",
-   "start": 170.20833333333334,
-   "end": 171.70833333333334,
-   "startFrame": 4085,
-   "frames": 36
+   "file": "/home/user/footage/work/segs/42.mp4",
+   "start": 171.20833333333334,
+   "end": 173.70833333333334,
+   "startFrame": 4109,
+   "frames": 60
   },
   {
    "id": "43",
@@ -741,10 +742,10 @@
    "in": 9.0,
    "out": 11.0,
    "note": "מוטי מתקשר",
-   "file": "/home/user/footage/work/segs/051_43.mp4",
-   "start": 171.70833333333334,
-   "end": 173.70833333333334,
-   "startFrame": 4121,
+   "file": "/home/user/footage/work/segs/43.mp4",
+   "start": 173.70833333333334,
+   "end": 175.70833333333334,
+   "startFrame": 4169,
    "frames": 48
   },
   {
@@ -755,10 +756,10 @@
    "in": 13.2,
    "out": 16.0,
    "note": "״מוטי, אני בחופשה. אחזור אליך״ — גב למצלמה",
-   "file": "/home/user/footage/work/segs/052_44.mp4",
-   "start": 173.70833333333334,
-   "end": 176.5,
-   "startFrame": 4169,
+   "file": "/home/user/footage/work/segs/44.mp4",
+   "start": 175.70833333333334,
+   "end": 178.5,
+   "startFrame": 4217,
    "frames": 67
   },
   {
@@ -769,10 +770,10 @@
    "in": 16.8,
    "out": 22.6,
    "note": "מניח את הטלפון, חוזר לחברים ויוצא מאחורי העמוד",
-   "file": "/home/user/footage/work/segs/053_45.mp4",
-   "start": 176.5,
-   "end": 182.29166666666666,
-   "startFrame": 4236,
+   "file": "/home/user/footage/work/segs/45.mp4",
+   "start": 178.5,
+   "end": 184.29166666666666,
+   "startFrame": 4284,
    "frames": 139
   },
   {
@@ -782,10 +783,10 @@
    "type": "card",
    "dur": 4.5,
    "note": "כרטיס הסיום — נבנה במושן",
-   "file": "/home/user/footage/work/segs/054_46.mp4",
-   "start": 182.29166666666666,
-   "end": 186.79166666666666,
-   "startFrame": 4375,
+   "file": "/home/user/footage/work/segs/46.mp4",
+   "start": 184.29166666666666,
+   "end": 188.79166666666666,
+   "startFrame": 4423,
    "frames": 108
   }
  ]

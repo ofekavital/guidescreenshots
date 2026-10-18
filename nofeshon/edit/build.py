@@ -74,10 +74,15 @@ def main():
     os.makedirs(segdir, exist_ok=True)
     timeline, t = [], 0
     for i, seg in enumerate(EDL["segments"]):
-        out = os.path.join(segdir, f"{i:03d}_{seg['id']}.mp4")
+        out = os.path.join(segdir, f"{seg['id']}.mp4")
         n = frames(seg)
-        if only is None or seg["id"] == only:
+        # סגמנט שלא השתנה מאז הרינדור הקודם לא מרונדר שוב
+        key = json.dumps({k: v for k, v in seg.items() if k != "note"}, sort_keys=True)
+        stamp = out + ".key"
+        fresh = os.path.exists(out) and os.path.exists(stamp) and open(stamp).read() == key
+        if (only is None and not fresh) or seg["id"] == only:
             render_segment(i, seg, out)
+            open(stamp, "w").write(key)
             print(f"{seg['id']:>7}  {n / FPS:5.2f}s  @ {t / FPS:6.2f}s")
         timeline.append({**seg, "file": out, "start": t / FPS, "end": (t + n) / FPS, "startFrame": t, "frames": n})
         t += n

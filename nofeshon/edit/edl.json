@@ -11,7 +11,7 @@
     { "id": "01b", "act": "opening", "scene": "01", "src": "1.mp4", "in": 15.0, "out": 17.4, "audio": true, "note": "מוטי" },
     { "id": "01c", "act": "opening", "scene": "01", "src": "1.mp4", "in": 22.3, "out": 27.2, "audio": true, "note": "שוט רחב של האולם הריק" },
     { "id": "01d", "act": "opening", "scene": "01", "src": "1.mp4", "in": 33.0, "out": 39.5, "audio": true, "note": "רוני נרדם" },
-    { "id": "02", "act": "opening", "scene": "02", "src": "2.mp4", "in": 0.0, "out": 4.4, "note": "השעון 2017 ← 2026" },
+    { "id": "02", "act": "opening", "scene": "02", "src": "2.mp4", "in": 0.0, "out": 5.4, "note": "השעון 2017 ← 2026" },
 
     { "id": "03", "act": "news", "scene": "03", "src": "3-5.mov", "in": 0.4, "out": 2.4, "note": "אבי במנוף" },
     { "id": "03b", "act": "news", "scene": "03", "src": "3-5.mov", "in": 7.6, "out": 9.2, "note": "מסיר כפפות" },
@@ -63,7 +63,7 @@
 
     { "id": "40", "act": "ending", "scene": "40", "src": "40_42-45.mov", "in": 0.0, "out": 4.4, "note": "רוני בריזורט, מבחין בטלפון" },
     { "id": "41", "act": "ending", "scene": "41", "src": "41.mov", "in": 0.0, "out": 7.4, "speed": 1.5, "note": "דפדוף בתמונות" },
-    { "id": "42", "act": "ending", "scene": "42", "src": "41.mov", "in": 7.4, "out": 8.9, "note": "הסקר — שכבת מושן" },
+    { "id": "42", "act": "ending", "scene": "42", "src": "41.mov", "in": 7.4, "out": 8.9, "speed": 0.6, "note": "הסקר — שכבת מושן" },
     { "id": "43", "act": "ending", "scene": "43", "src": "41.mov", "in": 9.0, "out": 11.0, "note": "מוטי מתקשר" },
     { "id": "44", "act": "ending", "scene": "44", "src": "40_42-45.mov", "in": 13.2, "out": 16.0, "note": "״מוטי, אני בחופשה. אחזור אליך״ — גב למצלמה" },
     { "id": "45", "act": "ending", "scene": "45", "src": "40_42-45.mov", "in": 16.8, "out": 22.6, "note": "מניח את הטלפון, חוזר לחברים ויוצא מאחורי העמוד" },
