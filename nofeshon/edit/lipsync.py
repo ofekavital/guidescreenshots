@@ -67,6 +67,7 @@ def render(r, stem):
     env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count()), LS_SEQ_CFG="1")
     if "ref" in r:
         env["LS_REF_FRAME"] = str(r["ref"])
+        env["LS_REF_VIDEO"] = v
     py = os.path.join(LS, ".venv", "bin", "python")
     log = os.path.join(DIR, f"{r['name']}.log")
     with open(log, "w") as fh:
