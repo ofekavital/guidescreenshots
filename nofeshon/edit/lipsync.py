@@ -64,7 +64,9 @@ def render(r, stem):
          "-an", "-c:v", "libx264", "-crf", "10", "-preset", "fast", v])
     run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t0:.4f}", "-t", f"{dur:.4f}", "-i", stem, "-ac", "1", "-ar", "16000", au])
     # guidance מעל 1 רץ כשני מעברים ברצף (LS_SEQ_CFG), כדי שייכנס בזיכרון של מעבד בלי GPU
-    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count()), LS_SEQ_CFG="1")
+    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count()), LS_SEQ_CFG="1",
+               # טנזורים גדולים דרך mmap ישירות מול מערכת ההפעלה: בלי זה הזיכרון מתפצל בין אצוות וחורג מ־14GB
+               MALLOC_MMAP_THRESHOLD_="131072", MALLOC_TRIM_THRESHOLD_="131072", MALLOC_ARENA_MAX="2")
     if "ref" in r:
         env["LS_REF_FRAME"] = str(r["ref"])
         env["LS_REF_VIDEO"] = v

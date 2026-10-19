@@ -12,10 +12,18 @@ index 13722e0..a73a8da 100644
                  zero_rank_log(logger, f"resume from global_step: {ckpt['global_step']}")
                  resume_global_step = ckpt["global_step"]
 diff --git a/latentsync/pipelines/lipsync_pipeline.py b/latentsync/pipelines/lipsync_pipeline.py
-index 693155e..4cb4da2 100644
+index 693155e..bda060c 100644
 --- a/latentsync/pipelines/lipsync_pipeline.py
 +++ b/latentsync/pipelines/lipsync_pipeline.py
-@@ -140,7 +140,8 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -3,6 +3,7 @@
+ import inspect
+ import math
+ import os
++import gc
+ import shutil
+ from typing import Callable, List, Optional, Union
+ import subprocess
+@@ -140,7 +141,8 @@ class LipsyncPipeline(DiffusionPipeline):
      def decode_latents(self, latents):
          latents = latents / self.vae.config.scaling_factor + self.vae.config.shift_factor
          latents = rearrange(latents, "b c f h w -> (b f) c h w")
@@ -25,7 +33,7 @@ index 693155e..4cb4da2 100644
          return decoded_latents
  
      def prepare_extra_step_kwargs(self, generator, eta):
-@@ -202,7 +203,7 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -202,7 +204,7 @@ class LipsyncPipeline(DiffusionPipeline):
          masked_image = masked_image.to(device=device, dtype=dtype)
  
          # encode the mask image into latents space so we can concatenate it to the latents
@@ -34,7 +42,7 @@ index 693155e..4cb4da2 100644
          masked_image_latents = (masked_image_latents - self.vae.config.shift_factor) * self.vae.config.scaling_factor
  
          # aligning device to prevent device errors when concating it with the latent model input
-@@ -221,7 +222,7 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -221,7 +223,7 @@ class LipsyncPipeline(DiffusionPipeline):
  
      def prepare_image_latents(self, images, device, dtype, generator, do_classifier_free_guidance):
          images = images.to(device=device, dtype=dtype)
@@ -43,7 +51,7 @@ index 693155e..4cb4da2 100644
          image_latents = (image_latents - self.vae.config.shift_factor) * self.vae.config.scaling_factor
          image_latents = rearrange(image_latents, "f c h w -> 1 c f h w")
          image_latents = torch.cat([image_latents] * 2) if do_classifier_free_guidance else image_latents
-@@ -254,8 +255,16 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -254,8 +256,16 @@ class LipsyncPipeline(DiffusionPipeline):
          boxes = []
          affine_matrices = []
          print(f"Affine transforming {len(video_frames)} faces...")
@@ -61,7 +69,7 @@ index 693155e..4cb4da2 100644
              faces.append(face)
              boxes.append(box)
              affine_matrices.append(affine_matrix)
-@@ -339,7 +348,7 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -339,7 +349,7 @@ class LipsyncPipeline(DiffusionPipeline):
          # 0. Define call parameters
          device = self._execution_device
          mask_image = load_fixed_mask(height, mask_image_path)
@@ -70,7 +78,14 @@ index 693155e..4cb4da2 100644
          self.set_progress_bar_config(desc=f"Sample frames: {num_frames}")
  
          # 1. Default height and width to unet
-@@ -389,9 +398,11 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -386,12 +396,18 @@ class LipsyncPipeline(DiffusionPipeline):
+ 
+         num_inferences = math.ceil(len(whisper_chunks) / num_frames)
+         for i in tqdm.tqdm(range(num_inferences), desc="Doing inference..."):
++            # בין אצוות: מנקים את המטמון של DeepCache ומחזירים זיכרון, אחרת במעבד הזיכרון מתפצל וחורג
++            if getattr(self, "_deepcache", None) is not None:
++                self._deepcache.cached_output.clear()
++            gc.collect()
              if self.unet.add_audio_layer:
                  audio_embeds = torch.stack(whisper_chunks[i * num_frames : (i + 1) * num_frames])
                  audio_embeds = audio_embeds.to(device, dtype=weight_dtype)
@@ -83,7 +98,7 @@ index 693155e..4cb4da2 100644
              else:
                  audio_embeds = None
              inference_faces = faces[i * num_frames : (i + 1) * num_frames]
-@@ -399,6 +410,21 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -399,6 +415,21 @@ class LipsyncPipeline(DiffusionPipeline):
              ref_pixel_values, masked_pixel_values, masks = self.image_processor.prepare_masks_and_masked_images(
                  inference_faces, affine_transform=False
              )
@@ -105,7 +120,7 @@ index 693155e..4cb4da2 100644
  
              # 7. Prepare mask latent variables
              mask_latents, masked_image_latents = self.prepare_mask_latents(
-@@ -425,21 +451,33 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -425,21 +456,33 @@ class LipsyncPipeline(DiffusionPipeline):
              num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
              with self.progress_bar(total=num_inference_steps) as progress_bar:
                  for j, t in enumerate(timesteps):
@@ -154,7 +169,7 @@ index 693155e..4cb4da2 100644
  
                      # compute the previous noisy sample x_t -> x_t-1
                      latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
-@@ -473,5 +511,5 @@ class LipsyncPipeline(DiffusionPipeline):
+@@ -473,5 +516,5 @@ class LipsyncPipeline(DiffusionPipeline):
  
          sf.write(os.path.join(temp_dir, "audio.wav"), audio_samples, audio_sample_rate)
  
