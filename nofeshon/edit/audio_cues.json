@@ -6,7 +6,7 @@
     {"kind": "sfx", "name": "vib1", "seg": "01", "at": 3.75, "src": "s1/vib_d.mp3", "ss": 0.15, "to": 0.95, "peak": -26},
     {"kind": "sfx", "name": "vib2", "seg": "01", "at": 5.0, "src": "s1/vib_d.mp3", "ss": 0.15, "to": 0.95, "peak": -26},
     {"kind": "sfx", "name": "vib3", "seg": "01", "at": 6.25, "src": "s1/vib_d.mp3", "ss": 0.15, "to": 0.95, "peak": -26},
-    {"kind": "vo", "name": "hello", "seg": "01", "at": 7.55, "src": "s1/hello_a.mp3", "lufs": -25},
+    {"kind": "vo", "name": "hello", "seg": "01", "at": 7.55, "src": "s1/hello_a.mp3", "lufs": -21},
     {"kind": "vo", "name": "nofesh", "seg": "01", "at": 15.3, "src": "s1/nofesh_b.mp3", "to": 1.56, "lufs": -24},
     {"kind": "vo", "name": "hum", "seg": "01", "at": 16.93, "src": "s1/cgh_c.mp3", "ss": 1.45, "to": 1.9, "peak": -22, "af": "aecho=1.0:0.9:28|47:0.10|0.06"},
     {"kind": "vo", "name": "cough1", "seg": "01", "at": 17.365, "src": "s1/cgh_c.mp3", "ss": 2.27, "to": 2.6, "peak": -16, "af": "aecho=1.0:0.9:28|47:0.10|0.06"},

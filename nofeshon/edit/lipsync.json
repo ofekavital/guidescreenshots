@@ -8,8 +8,8 @@
   "ranges": [
     { "name": "s1_lecture", "ref": 11, "start": 0.0, "end": 4.045, "who": "המרצה", "line": "ובהתאם למודל האינטגרטיבי..." },
     { "name": "s3_lecture", "ref": 19, "start": 9.343, "end": 13.054, "who": "המרצה", "line": "...על תהליכי העבודה, ועל שיתוף הפעולה בין המחלקות" },
-    { "name": "s4_roni", "ref": 25, "start": 15.1, "end": 16.891, "who": "רוני", "line": "נופש? איפה?",
+    { "name": "s4_roni", "ref": 25, "blend_in": 6, "start": 15.1, "end": 16.891, "who": "רוני", "line": "נופש? איפה?",
       "drive": { "src": "/home/user/footage/work/audio/s1/drive_nofesh.wav", "at": 15.3, "instead_of": "nofesh", "why": "הלחישה לא מניעה מספיק את המודל; גרסה מדוברת באותו תזמון בדיוק" } },
-    { "name": "s5_rebuke", "ref": 25, "start": 21.3, "end": 24.816, "who": "המרצה", "line": "סליחה... אתה מפריע לכולם." }
+    { "name": "s5_rebuke", "ref": 25, "blend_in": 6, "start": 21.3, "end": 24.816, "who": "המרצה", "line": "סליחה... אתה מפריע לכולם." }
   ]
 }

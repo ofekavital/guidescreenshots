@@ -85,22 +85,57 @@ def render(r, stem):
 
 
 def splice():
-    """המקור, ובכל טווח: הפלט של LatentSync מוחזר ל־23.976 ונחתך בדיוק למספר הפריימים."""
-    parts, fc, k, pos = [], [], 0, 0
+    """המקור, ובכל טווח: הפלט של LatentSync מוחזר ל־23.976 ונחתך בדיוק למספר הפריימים.
+    blend_in בטווח שמתחיל באמצע שוט: מעבר הדרגתי של כמה פריימים מהמקור לפלט (בשקט),
+    כדי שהפה לא יקפוץ בבת אחת ממצב סגור לפתוח מעט."""
+    ready = sorted([r for r in CFG["ranges"] if os.path.exists(os.path.join(DIR, f"{r['name']}_ls.mp4"))], key=lambda r: r["start"])
     ins = ["-i", SRC]
-    ready = [r for r in CFG["ranges"] if os.path.exists(os.path.join(DIR, f"{r['name']}_ls.mp4"))]
-    for r in sorted(ready, key=lambda r: r["start"]):
+    norm = f"fps={FPS_NUM}/{FPS_DEN},format=yuv420p,setsar=1,settb=AVTB"
+    fc, k, pos = [], 0, 0
+    cur, cur_len = None, 0  # התווית של מה שהורכב עד עכשיו, ואורכו בפריימים
+
+    def append(label, n):
+        nonlocal cur, cur_len, k
+        if cur is None:
+            cur, cur_len = label, n
+            return
+        fc.append(f"{cur}{label}concat=n=2:v=1:a=0[c{k}]")
+        cur, cur_len, k = f"[c{k}]", cur_len + n, k + 1
+
+    for r in ready:
         a, b = frame(r["start"]), frame(r["end"])
-        if a > pos:
-            fc.append(f"[0:v]trim=start_frame={pos}:end_frame={a},setpts=PTS-STARTPTS[p{k}]"); parts.append(f"[p{k}]"); k += 1
+        nb = int(r.get("blend_in", 0))
         ins += ["-i", os.path.join(DIR, f"{r['name']}_ls.mp4")]
         i = len(ins) // 2 - 1
-        fc.append(f"[{i}:v]fps={FPS_NUM}/{FPS_DEN},trim=end_frame={b - a},setpts=PTS-STARTPTS,"
-                  f"tpad=stop_mode=clone:stop={b - a},trim=end_frame={b - a}[p{k}]")
-        parts.append(f"[p{k}]"); k += 1
+        fc.append(f"[{i}:v]{norm},trim=end_frame={b - a},setpts=PTS-STARTPTS,"
+                  f"tpad=stop_mode=clone:stop={b - a},trim=end_frame={b - a},split=2[l{k}][m{k}]")
+        ls, ls2 = f"[l{k}]", f"[m{k}]"
+        k += 1
+        if a > pos:
+            # כל קטע מקור מקלט נפרד: אותו קלט פעמיים גורם ל־ffmpeg לצבור פריימים בזיכרון
+            ins += ["-i", SRC]
+            fc.append(f"[{len(ins) // 2 - 1}:v]trim=start_frame={pos}:end_frame={a},setpts=PTS-STARTPTS,{norm}[o{k}]")
+            append(f"[o{k}]", a - pos)
+            k += 1
+        if nb:
+            # nb הפריימים הראשונים: תערובת שעוברת בהדרגה מהמקור לפלט, פריים אחר פריים (מדויק, בלי עיגול זמנים)
+            ins += ["-i", SRC]
+            fc.append(f"[{len(ins) // 2 - 1}:v]trim=start_frame={a}:end_frame={a + nb},setpts=PTS-STARTPTS,{norm}[p{k}]")
+            fc.append(f"{ls}trim=end_frame={nb},setpts=PTS-STARTPTS[q{k}]")
+            w = f"(N+1)/{nb + 1}"
+            fc.append(f"[p{k}][q{k}]blend=all_expr='A*(1-{w})+B*{w}'[x{k}]")
+            append(f"[x{k}]", nb)
+            fc.append(f"{ls2}trim=start_frame={nb},setpts=PTS-STARTPTS[r{k}]")
+            append(f"[r{k}]", b - a - nb)
+            k += 1
+        else:
+            fc.append(f"{ls2}nullsink")
+            append(ls, b - a)
         pos = b
-    fc.append(f"[0:v]trim=start_frame={pos},setpts=PTS-STARTPTS[p{k}]"); parts.append(f"[p{k}]")
-    fc.append("".join(parts) + f"concat=n={len(parts)}:v=1:a=0,setsar=1[v]")
+    ins += ["-i", SRC]
+    fc.append(f"[{len(ins) // 2 - 1}:v]trim=start_frame={pos},setpts=PTS-STARTPTS,{norm}[o{k}]")
+    append(f"[o{k}]", 0)
+    fc.append(f"{cur}null[v]")
     run(["ffmpeg", "-v", "error", "-y", *ins, "-filter_complex", ";".join(fc), "-map", "[v]", "-map", "0:a?",
          "-c:v", "libx264", "-crf", "10", "-preset", "slow", "-r", f"{FPS_NUM}/{FPS_DEN}", "-c:a", "copy", OUT])
     print("→", OUT)
